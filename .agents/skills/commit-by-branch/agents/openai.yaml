@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit by Branch"
+  short_description: "현재 브랜치 이름을 포함한 팀 커밋 규칙을 정확하게 적용합니다"
+  default_prompt: "Use $commit-by-branch to create a commit that follows this repository commit convention."
