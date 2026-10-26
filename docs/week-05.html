@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="2026 LikeLion Backend Study — Python과 FastAPI로 배우는 14주 백엔드 커리큘럼">
+  <title>Week 05 — REST API 처음부터 설계하기 · LikeLion Backend Study</title>
+  <style>
+:root {
+  color-scheme: light;
+  --paper: #f4f1e8;
+  --paper-raised: #fffdf7;
+  --ink: #16211d;
+  --muted: #68736d;
+  --line: #c9cec8;
+  --accent: #ff5c35;
+  --accent-soft: #ffe1d7;
+  --forest: #123b2e;
+  --code: #11201b;
+  --code-ink: #e7f5ec;
+  --sidebar-width: 292px;
+  --content-width: 850px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #101713;
+  --paper-raised: #17201b;
+  --ink: #edf4ef;
+  --muted: #a9b5ae;
+  --line: #35423b;
+  --accent: #ff7959;
+  --accent-soft: #4a291f;
+  --forest: #b9efcf;
+  --code: #09100d;
+  --code-ink: #dff4e6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Pretendard, "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+  line-height: 1.78;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -5rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  display: flex;
+  width: var(--sidebar-width);
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.brand-block {
+  padding: 2rem 1.65rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: block;
+  text-decoration: none;
+}
+
+.brand span,
+.page-meta,
+.sidebar-footer,
+.pager-link span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.brand span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.brand strong {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+
+.brand-block p {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.week-nav {
+  display: grid;
+  padding: 0.8rem;
+  gap: 0.18rem;
+}
+
+.week-nav a {
+  display: grid;
+  grid-template-columns: 4.7rem 1fr;
+  align-items: baseline;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  text-decoration: none;
+}
+
+.week-nav a:hover {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.week-nav a.active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: var(--paper-raised);
+}
+
+[data-theme="dark"] .week-nav a.active {
+  background: #234b3b;
+  color: #f7fff9;
+}
+
+.week-nav span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+}
+
+.week-nav a.active span {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.week-nav strong {
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+
+.sidebar-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 1rem 1.55rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.theme-toggle,
+.menu-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.theme-toggle:hover,
+.menu-toggle:hover {
+  color: var(--accent);
+}
+
+main {
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+}
+
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto var(--sidebar-width);
+  z-index: 30;
+  height: 3px;
+  background: transparent;
+}
+
+.reading-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+}
+
+.article-shell {
+  width: min(calc(100% - 3rem), var(--content-width));
+  margin: 0 auto;
+  padding: 4.3rem 0 3rem;
+}
+
+.page-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3.8rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+article > h1:first-child {
+  max-width: 790px;
+  margin: 0 0 3.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-weight: 600;
+  letter-spacing: -0.064em;
+  line-height: 0.98;
+}
+
+.overview article > h1:first-child {
+  font-size: clamp(3.25rem, 7.3vw, 6.75rem);
+}
+
+article > p:nth-child(2) {
+  color: var(--muted);
+}
+
+h2 {
+  margin: 4.8rem 0 1.45rem;
+  padding-top: 1.2rem;
+  border-top: 3px solid var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+h3 {
+  margin: 3rem 0 0.8rem;
+  color: var(--forest);
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+h4 {
+  margin: 2rem 0 0.5rem;
+}
+
+.heading-anchor {
+  margin-left: 0.35rem;
+  color: var(--line);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+.heading-anchor:focus {
+  opacity: 1;
+}
+
+p,
+li {
+  font-size: 1rem;
+}
+
+strong {
+  font-weight: 750;
+}
+
+blockquote {
+  margin: 2rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 0;
+  border-left: 5px solid var(--accent);
+  background: var(--accent-soft);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+}
+
+blockquote p {
+  margin: 0;
+  font-size: inherit;
+}
+
+ul,
+ol {
+  padding-left: 1.35rem;
+}
+
+li + li {
+  margin-top: 0.35rem;
+}
+
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.45rem;
+  accent-color: var(--accent);
+  vertical-align: -0.12rem;
+}
+
+table {
+  display: table;
+  width: 100%;
+  margin: 1.75rem 0 2.5rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  padding: 0.75rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  border-bottom: 2px solid var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+code {
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+p code,
+li code,
+td code {
+  padding: 0.13em 0.35em;
+}
+
+pre {
+  position: relative;
+  margin: 1.7rem 0 2.2rem;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--code-ink) 15%, transparent);
+  border-radius: 0.45rem;
+  background: var(--code);
+  color: var(--code-ink);
+  box-shadow: 0 1.2rem 2.5rem rgb(10 22 16 / 10%);
+}
+
+pre code {
+  display: block;
+  min-width: max-content;
+  padding: 1.35rem 1.45rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.copy-code {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 0.25rem;
+  background: rgb(0 0 0 / 28%);
+  color: #dce9e1;
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+}
+
+.mermaid {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 2rem 0 2.5rem;
+  overflow-x: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  background: var(--paper-raised);
+  text-align: center;
+}
+
+.pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 6rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.pager-link {
+  display: flex;
+  min-height: 7.5rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.2rem;
+  text-decoration: none;
+}
+
+.pager-link + .pager-link {
+  border-left: 1px solid var(--line);
+}
+
+.pager-link.next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.pager-link:hover {
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.pager-link span {
+  color: var(--accent);
+  font-size: 0.65rem;
+}
+
+.pager-link strong {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.document-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper-raised) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .mobile-brand {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+
+  .menu-toggle {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 0.25rem;
+    font-size: 0.72rem;
+  }
+
+  .sidebar {
+    top: 3.5rem;
+    width: min(88vw, 330px);
+    transform: translateX(-102%);
+    box-shadow: 1rem 0 2rem rgb(0 0 0 / 16%);
+    transition: transform 180ms ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  main {
+    margin-left: 0;
+  }
+
+  .reading-progress {
+    left: 0;
+  }
+
+  .article-shell {
+    width: min(calc(100% - 2rem), var(--content-width));
+    padding-top: 2.2rem;
+  }
+
+  .page-meta {
+    margin-bottom: 2.5rem;
+  }
+}
+
+@media (max-width: 620px) {
+  article > h1:first-child {
+    margin-bottom: 2.6rem;
+    font-size: 2.65rem;
+  }
+
+  .overview article > h1:first-child {
+    font-size: 3.15rem;
+  }
+
+  h2 {
+    margin-top: 3.8rem;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .page-meta span:last-child {
+    display: none;
+  }
+
+  .pager {
+    grid-template-columns: 1fr;
+  }
+
+  .pager-link.next {
+    grid-column: 1;
+  }
+
+  .pager-link + .pager-link {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .document-footer {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
+@media print {
+  .sidebar,
+  .mobile-header,
+  .reading-progress,
+  .pager,
+  .copy-code {
+    display: none !important;
+  }
+
+  main {
+    margin: 0;
+  }
+
+  .article-shell {
+    width: 100%;
+    padding: 0;
+  }
+}
+
+  
+/* Week 05 reading aids */
+.lesson-toc, .note, details { padding: 1rem 1.3rem; border: 1px solid var(--line); border-radius: .45rem; background: var(--paper-raised); }
+.lesson-toc { margin-top: 2rem; }
+.lesson-toc ol { columns: 2; column-gap: 2rem; }
+.lesson-toc li { break-inside: avoid; margin: .4rem 0; font-size: .9rem; }
+details { margin: 1.3rem 0; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible, a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.source { font-size: .82rem; color: var(--muted); }
+.flow { flex-wrap: wrap; display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding: 1.2rem; border: 1px solid var(--line); background: var(--paper-raised); text-align: center; }
+article > h1:first-child { font-family: inherit; font-size: clamp(2.2rem, 4vw, 3.8rem); line-height: 1.2; letter-spacing: -.045em; }
+h2, h3 { scroll-margin-top: 5rem; }
+@media(max-width:620px) { .lesson-toc ol { columns: 1; } .flow { flex-direction: column; } }
+
+</style>
+</head>
+<body class="lesson">
+  <a class="skip-link" href="#content">본문으로 건너뛰기</a>
+  <header class="mobile-header">
+    <a class="mobile-brand" href="index.html">LIKELION / BACKEND</a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">목차</button>
+  </header>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-block">
+      <a class="brand" href="index.html"><span>LIKELION</span><strong>BACKEND<br>STUDY</strong></a>
+      <p>Python · FastAPI · PostgreSQL</p>
+    </div>
+    <nav class="week-nav" aria-label="커리큘럼"><a href="index.html"><span>Overview</span><strong>14주 전체 로드맵</strong></a>
+<a href="week-01.html"><span>Week 01</span><strong>Git & GitHub I</strong></a>
+<a href="week-02.html"><span>Week 02</span><strong>Git & GitHub II</strong></a>
+<a href="week-03.html"><span>Week 03</span><strong>HTTP/HTTPS 1탄</strong></a>
+<a href="week-04.html"><span>Week 04</span><strong>HTTP/HTTPS 2탄</strong></a>
+<a href="week-05.html" aria-current="page" class="active"><span>Week 05</span><strong>REST API</strong></a>
+<a href="week-06.html"><span>Week 06</span><strong>Local DB &amp; API 조회</strong></a>
+<a href="week-07.html"><span>Week 07</span><strong>User CRUD &amp; Validation</strong></a>
+<a href="week-08.html"><span>Week 08</span><strong>Backend Layers</strong></a>
+<a href="week-09.html"><span>Week 09</span><strong>Database II</strong></a>
+<a href="week-10.html"><span>Week 10</span><strong>Docker & DB</strong></a>
+<a href="week-11.html"><span>Week 11</span><strong>SQLAlchemy ORM</strong></a>
+<a href="week-12.html"><span>Week 12</span><strong>Authentication I</strong></a>
+<a href="week-13.html"><span>Week 13</span><strong>Authentication II</strong></a>
+<a href="week-14.html"><span>Week 14</span><strong>Final Integration</strong></a></nav>
+    <div class="sidebar-footer">
+      <span>2026 FALL</span>
+      <button class="theme-toggle" type="button" aria-label="색상 테마 전환">LIGHT / DARK</button>
+    </div>
+  </aside>
+  <main id="content">
+    <div class="reading-progress" aria-hidden="true"><span></span></div>
+    <div class="article-shell">
+      <div class="page-meta"><span>WEEK 05 · 14</span><span>PYTHON 3.13 · FASTAPI</span></div>
+      <article><h1 id="week-05-api-rest">Week 05<br>REST API 처음부터 설계하기</h1>
+<p>REST API가 무엇인지부터 시작합니다. 요청 하나의 전체 흐름을 먼저 보고, 각 부분을 자세히 살펴봅니다. 실습은 main.py 파일 하나를 기준으로 진행합니다. Client와 server, HTTP의 기초 흐름은 이전 주차에서 배운 내용으로 연결합니다.</p>
+<blockquote><p>학습 목표: “사용자 이름을 바꾼다”라는 요구사항을 요청과 응답으로 표현하고, 설계 이유를 설명할 수 있습니다.</p></blockquote>
+<nav class="lesson-toc" aria-label="이번 주 학습 순서"><strong>학습 순서</strong><ol>
+<li><a href="#start">REST API란 무엇인가?</a></li><li><a href="#contract">전체 그림: 요구사항에서 요청·응답까지</a></li><li><a href="#json">JSON: 데이터를 어떻게 읽는가?</a></li><li><a href="#resource">Resource와 representation</a></li><li><a href="#request">URL과 요청의 네 가지 입력 위치</a></li><li><a href="#methods">HTTP method와 CRUD</a></li><li><a href="#repeat">Safe와 idempotent</a></li><li><a href="#response">Status code와 오류 응답</a></li><li><a href="#walkthrough">사용자 생성부터 삭제까지 추적하기</a></li><li><a href="#rest">REST가 요구하는 설계 제약</a></li><li><a href="#pagination">Pagination과 변경 중인 목록</a></li><li><a href="#compatibility">Compatibility와 versioning</a></li><li><a href="#practice">실습과 해설</a></li></ol></nav>
+<p class="note">예시 안내: 사용자 API의 주소와 데이터는 학습용 설계입니다. 13절의 main.py 예제는 직접 실행할 수 있습니다. HTTP 예시는 핵심 부분만 표시합니다. 전송에 필요한 일부 header는 생략합니다.</p>
+
+<h2 id="start">1. REST API란 무엇인가?</h2>
+<p><strong>REST API는 REST라는 설계 원칙에 따라 만든 API입니다.</strong> 먼저 API와 REST를 나누어 이해해 봅시다.</p>
+<p><strong>API</strong>는 다른 프로그램의 기능을 정해진 방식으로 사용할 수 있게 하는 접점입니다. 이 수업에서는 HTTP로 요청하고 응답받는 API를 다룹니다. 사용자는 정보를 조회하거나 수정할 수 있습니다. API는 이를 어떤 요청으로 표현할지 정합니다.</p>
+<p><strong>REST</strong>는 Representational State Transfer의 약자입니다. 네트워크로 연결된 프로그램의 상호작용을 정하는 설계 방식입니다. 먼저 REST의 핵심 개념인 resource부터 살펴봅니다. 나머지 설계 제약은 10절에서 설명합니다.</p>
+<p><strong>Resource</strong>는 API가 식별하여 다루는 대상입니다. 사용자 한 명, 게시글 한 개, 주문 한 건이 resource가 될 수 있습니다.</p>
+<p>“42번 사용자를 조회한다”라는 요구사항을 생각해 봅시다. 대상은 42번 사용자입니다. 요청하는 동작은 조회입니다. 이 두 부분을 다음처럼 표현할 수 있습니다.</p>
+<pre><code class="language-http">GET /users/42</code></pre>
+<ul><li><code>/users/42</code>는 어떤 대상인지 나타내는 주소의 경로입니다. 여기서는 42번 사용자입니다.</li><li><code>GET</code>은 그 대상의 정보를 읽겠다는 요청입니다.</li><li>GET처럼 요청의 동작 의미를 나타내는 단어를 <strong>HTTP method</strong>라고 합니다.</li></ul>
+<p><strong>대상은 주소로 식별하고, 요청하는 동작은 HTTP method로 나타냅니다.</strong> 다만 이 규칙만 지켰다고 REST의 모든 제약을 만족하는 것은 아닙니다. JSON 사용이나 복수형 URL도 그 자체로 REST의 필수 조건은 아닙니다.</p>
+<p class="source">REST의 정의와 제약: <a href="https://ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm">Fielding, chapter 5</a>. HTTP method의 의미: <a href="https://httpwg.org/specs/rfc9110.html#methods">RFC 9110 §9</a>.</p>
+<details><summary>확인: “17번 게시글을 조회한다”에서 resource는 무엇일까요?</summary><p>17번 게시글입니다. 조회는 그 resource에 대해 요청하는 동작입니다. 예를 들어 GET /posts/17로 표현할 수 있습니다.</p></details>
+
+<h2 id="contract">2. 전체 그림: 요구사항에서 요청·응답까지</h2>
+<p>세부 문법에 들어가기 전에 API 하나가 어떻게 연결되는지 봅시다. 이번 목표는 <strong>“42번 사용자의 이름을 화면에 표시한다”</strong>입니다.</p>
+<p><strong>Path</strong>는 주소에서 요청 대상을 가리키는 경로입니다. <strong>Endpoint</strong>는 이 수업에서 method와 path의 조합을 뜻합니다. <strong>Status code</strong>는 처리 결과를 나타내는 숫자입니다. <strong>Body</strong>는 메시지에 담는 실제 내용입니다. <strong>JSON</strong>은 데이터를 텍스트로 표현하는 형식입니다. JSON의 기호는 다음 절에서 설명합니다.</p>
+<div class="flow" aria-label="사용자 조회의 전체 흐름"><div><strong>요구사항</strong><br>42번 사용자 조회</div><div><strong>Request</strong><br>GET /users/42</div><div><strong>main.py</strong><br>연결된 함수 실행</div><div><strong>Response</strong><br>200 + 사용자 데이터</div></div>
+<ol><li>대상을 정합니다. 대상은 42번 사용자입니다.</li><li>Endpoint를 정합니다. 이 예제에서는 GET /users/42입니다.</li><li>Server가 요청을 받으면 main.py에 정의한 함수를 실행합니다. 함수는 정해진 작업을 수행하는 코드 묶음입니다.</li><li>함수가 사용자 데이터를 반환합니다. 여기서 반환은 처리한 값을 돌려주는 것입니다.</li><li>Server는 성공을 뜻하는 status code 200과 사용자 JSON을 응답합니다.</li><li>Client가 응답에서 이름을 읽고 화면에 표시합니다.</li></ol>
+<pre><code>요청: GET /users/42
+
+응답 status code: 200
+응답 body: {"id": "42", "name": "Ada"}</code></pre>
+<p>응답 body는 식별값이 42이고 이름이 Ada라는 정보를 나타냅니다. 이 데이터는 지금은 main.py에 직접 적어도 됩니다. Database는 데이터를 저장하고 조회하는 시스템입니다. 이번 실습에서는 database 없이 요청과 응답의 연결부터 확인합니다.</p>
+<p><strong>Contract</strong>는 API를 사용하는 쪽과 제공하는 쪽이 지킬 규칙입니다. “사용자를 조회한다”뿐 아니라 요청 주소, 입력, 성공 응답, 실패 응답까지 포함합니다.</p>
+<table><thead><tr><th>전체 그림의 부분</th><th>이 예제에서 정한 규칙</th><th>자세히 볼 곳</th></tr></thead><tbody>
+<tr><td>대상과 데이터 표현</td><td>42번 사용자 정보를 JSON으로 제공</td><td>3~4절</td></tr>
+<tr><td>주소와 입력</td><td>식별값을 /users/42에 넣음</td><td>5절</td></tr>
+<tr><td>동작과 반복 효과</td><td>GET으로 정보를 읽음</td><td>6~7절</td></tr>
+<tr><td>성공과 실패</td><td>성공하면 200, 사용자가 없으면 404</td><td>8절</td></tr>
+<tr><td>다른 동작으로 확장</td><td>생성·수정·삭제의 요청과 응답 설계</td><td>9절</td></tr>
+<tr><td>설계의 제약과 확장</td><td>REST 제약, 목록 크기, 변경 정책 확인</td><td>10~12절</td></tr>
+<tr><td>직접 확인</td><td>main.py 하나에서 조회 요청 실행</td><td>13절</td></tr></tbody></table>
+<p class="note">오늘의 구현 범위는 main.py 하나에서 조회 요청과 JSON 응답을 연결하는 것입니다. 생성·수정·삭제는 먼저 요청과 응답을 설계합니다. 전체 CRUD 구현과 파일 분리는 이후 학습으로 이어갑니다.</p>
+<details><summary>확인: main.py 내부 코드를 바꿔도 API를 사용하는 쪽이 그대로 동작하려면 무엇을 유지해야 할까요?</summary><p>외부 contract를 유지해야 합니다. 요청 방법과 입력 규칙, 응답의 형태와 의미가 계속 같아야 합니다. 내부 코드가 같은 파일에 있는지는 client가 의존할 규칙이 아닙니다.</p></details>
+
+<h2 id="json">3. JSON: 데이터를 어떻게 읽는가?</h2>
+<p><strong>JSON</strong>은 데이터를 텍스트로 표현하는 형식입니다. JavaScript Object Notation의 약자입니다. 이름에 JavaScript가 있지만 Python 등 다른 언어에서도 사용합니다. 아래 예시는 사용자 한 명의 정보입니다.</p>
+<pre><code class="language-json">{
+  "id": "usr_42",
+  "name": "Ada",
+  "age": 20,
+  "active": true
+}</code></pre>
+<ul><li><code>{ }</code>는 이름과 값의 묶음인 <strong>object</strong>를 나타냅니다.</li><li><code>"name"</code>은 값의 이름인 <strong>key</strong>입니다. <code>"Ada"</code>는 그 이름에 대응하는 <strong>value</strong>입니다.</li><li><code>:</code>은 key와 value를 나눕니다. <code>,</code>는 서로 다른 항목을 나눕니다.</li><li><code>"Ada"</code>처럼 따옴표로 감싼 값은 <strong>string</strong>입니다. 글자로 된 데이터입니다.</li><li><code>20</code>은 숫자입니다. <code>"20"</code>은 글자이므로 다른 종류의 값입니다.</li><li><code>true</code>와 <code>false</code>는 참과 거짓을 나타내는 <strong>boolean</strong>입니다.</li><li><code>id</code>는 이 예제에서 사용자를 구별하는 식별값입니다. <code>usr_42</code>는 임의로 정한 값입니다.</li></ul>
+<p><strong>Field</strong>는 데이터의 한 항목을 뜻합니다. 예를 들어 name field의 값은 Ada입니다. <code>[ ]</code>는 여러 값을 순서대로 넣는 <strong>array</strong>입니다. <code>[]</code>는 값이 없는 array입니다. <code>null</code>은 값이 없음을 명시하는 JSON 값입니다. Field 자체가 빠진 것과 같은 의미인지는 API가 정해야 합니다.</p>
+<pre><code class="language-json">{
+  "items": [
+    {"id": "usr_42", "name": "Ada"},
+    {"id": "usr_43", "name": "Lin"}
+  ],
+  "nextCursor": null
+}</code></pre>
+<p>items에는 사용자 두 명이 들어 있습니다. nextCursor는 뒤에서 설명할 다음 페이지 정보입니다. 이 예제에서는 null이므로 다음 페이지가 없다는 약속입니다. JSON 문법 자체가 이 의미를 정하는 것은 아닙니다.</p>
+<p class="source">형식 근거: <a href="https://www.rfc-editor.org/rfc/rfc8259.html">RFC 8259, JSON</a>.</p>
+<details><summary>확인: {"age": 20}과 {"age": "20"}은 같은 입력일까요?</summary><p>아니요. 첫 번째 값은 숫자이고 두 번째 값은 string입니다. Server가 둘 다 허용할지는 입력 규칙에 달려 있습니다.</p></details>
+
+<h2 id="resource">4. Resource와 representation</h2>
+<p><strong>Resource</strong>는 API가 식별하여 다루는 대상입니다. 사용자 한 명, 사용자 목록, 주문 한 건이 resource가 될 수 있습니다. Resource를 설계할 때는 “client가 무엇을 필요로 하는가?”부터 확인합니다.</p>
+<p><strong>Representation</strong>은 resource의 상태를 전달하는 데이터 표현입니다. “Ada라는 사용자”가 resource라면, 이름과 식별값을 담은 JSON은 그 사용자의 representation입니다. JSON만 가능한 것은 아닙니다.</p>
+<p>사용자 한 명의 주소를 <code>/users/usr_42</code>로 정해 봅시다. <code>users</code>는 사용자 목록을 가리키는 이름입니다. <code>usr_42</code>는 특정 사용자를 고릅니다. 이 주소가 반드시 database의 파일 위치나 table 이름과 일치할 필요는 없습니다. <strong>Table</strong>은 database에서 데이터를 행과 열로 정리한 구조입니다.</p>
+<p>예를 들어 database는 이름과 내부 운영 메모를 함께 저장할 수 있습니다. 사용자 목록 화면은 이름만 필요할 수 있습니다. 그러면 응답에는 식별값과 이름만 포함하도록 설계할 수 있습니다. 비밀번호나 내부 보안 정보는 공개 응답에 넣지 않습니다.</p>
+<details><summary>확인: Database의 모든 열을 JSON으로 보내야 resource를 정확히 표현한 것일까요?</summary><p>아니요. Representation은 이 API가 공개하기로 한 정보를 담습니다. 저장된 모든 정보를 복사할 필요는 없습니다. Client가 필요로 하는 정보와 공개 권한을 기준으로 결정합니다.</p></details>
+
+<h2 id="request">5. URL과 요청의 네 가지 입력 위치</h2>
+<p><strong>URL</strong>은 요청할 대상을 가리키는 주소입니다. 아래 주소를 왼쪽부터 나누어 읽어 봅시다.</p>
+<pre><code>https://api.example.com/users/usr_42?include=profile</code></pre>
+<table><thead><tr><th>부분</th><th>의미</th></tr></thead><tbody><tr><td><code>https://</code></td><td>HTTPS로 통신합니다.</td></tr><tr><td><code>api.example.com</code></td><td>요청할 서버의 이름입니다. 예시용 주소입니다.</td></tr><tr><td><code>/users/usr_42</code></td><td><strong>Path</strong>입니다. 서버 안에서 요청 대상을 가리킵니다.</td></tr><tr><td><code>?include=profile</code></td><td><strong>Query</strong>입니다. 여기서는 profile 정보를 함께 달라는 조건입니다.</td></tr></tbody></table>
+<p><strong>Parameter</strong>는 요청할 때 값을 넣는 항목입니다. <strong>Path parameter</strong>는 path의 일부분을 바꾸어 넣는 값입니다. 문서의 <code>/users/{id}</code>에서 <code>{id}</code>는 실제 식별값이 들어갈 자리입니다. 실제 요청에서는 <code>/users/usr_42</code>처럼 보냅니다.</p>
+<p><strong>Query parameter</strong>는 물음표 뒤의 이름과 값입니다. <code>limit=20</code>은 limit이라는 항목에 20을 넣은 것입니다. 여러 조건은 <code>&amp;</code>로 연결합니다. 예를 들어 <code>/users?role=admin&amp;limit=20</code>은 admin 역할의 사용자를 최대 20명 달라는 설계입니다.</p>
+<p><strong>Header</strong>는 메시지의 형식이나 인증 정보 등을 전달하는 항목입니다. <strong>Body</strong>는 생성할 사용자 정보처럼 실제로 전달할 내용을 담는 부분입니다. Header와 body는 요청뿐 아니라 응답에도 사용합니다.</p>
+<table><thead><tr><th>위치</th><th>이 수업의 사용 기준</th><th>예시</th></tr></thead><tbody><tr><td>Path</td><td>어떤 대상인가?</td><td><code>/users/usr_42</code></td></tr><tr><td>Query</td><td>어떤 조회 조건인가?</td><td><code>?limit=20</code></td></tr><tr><td>Header</td><td>내용의 형식 등 부가 정보</td><td><code>Content-Type: application/json</code></td></tr><tr><td>Body</td><td>보낼 데이터</td><td><code>{"name": "Ada"}</code></td></tr></tbody></table>
+<p><code>Content-Type: application/json</code>은 “이 메시지의 body가 JSON이다”라는 뜻입니다. <code>Accept: application/json</code>은 “JSON 응답을 받을 수 있다”라는 뜻입니다. 둘은 가리키는 방향이 다릅니다.</p>
+<p><strong>Authentication</strong>은 요청자의 신원을 확인하는 과정입니다. <strong>Token</strong>은 인증에 사용할 수 있는 값입니다. 일부 API는 <code>Authorization</code> header로 token을 받습니다. 비밀번호나 token을 URL에 넣으면 방문 기록이나 로그에 남기 쉽습니다. Body에 넣는 것만으로 암호화되지는 않으므로 HTTPS도 필요합니다.</p>
+<details><summary>확인: usr_42의 이름을 바꿀 때, 대상 식별값과 새 이름은 각각 어디에 둘까요?</summary><p>이 수업에서는 식별값을 path에 둡니다. 새 이름은 body에 둡니다. 예를 들어 대상은 /users/usr_42이고 body는 {"name": "Grace"}입니다.</p></details>
+
+<h2 id="methods">6. HTTP method와 CRUD</h2>
+<p><strong>HTTP method</strong>는 요청의 동작 의미를 나타내는 단어입니다. 같은 path라도 method가 다르면 다른 요청입니다. 이 수업에서는 method와 path의 조합을 <strong>endpoint</strong>라고 부릅니다.</p>
+<p><strong>CRUD</strong>는 Create, Read, Update, Delete의 첫 글자입니다. 각각 만들기, 읽기, 수정하기, 삭제하기입니다. HTTP의 모든 동작이 CRUD에만 속하는 것은 아닙니다.</p>
+<table><thead><tr><th>목적</th><th>예시 endpoint</th><th>의미</th></tr></thead><tbody><tr><td>목록 읽기</td><td><code>GET /users</code></td><td>목록 representation 요청</td></tr><tr><td>한 명 읽기</td><td><code>GET /users/usr_42</code></td><td>특정 사용자 representation 요청</td></tr><tr><td>새 사용자 만들기</td><td><code>POST /users</code></td><td>이 API에서 정의한 생성 처리 요청</td></tr><tr><td>전체 교체</td><td><code>PUT /users/usr_42</code></td><td>지정한 대상 상태를 제공한 표현으로 교체</td></tr><tr><td>부분 변경</td><td><code>PATCH /users/usr_42</code></td><td>제공한 변경 내용 적용</td></tr><tr><td>삭제</td><td><code>DELETE /users/usr_42</code></td><td>대상의 삭제 요청</td></tr></tbody></table>
+<p><code>/users</code>처럼 명사와 복수형을 쓰는 것은 널리 쓰이는 설계 관례입니다. REST의 필수 문법은 아닙니다. <code>GET /deleteUser</code>처럼 읽기 요청으로 삭제하게 설계하면 GET의 의미에 어긋납니다.</p>
+<h3>PUT과 PATCH를 같은 데이터로 비교하기</h3>
+<p>이 예제에서는 client가 설정할 수 있는 사용자 field를 name과 email 두 개로 정합니다. 현재 name은 Ada이고 email은 ada@example.com입니다.</p>
+<pre><code>현재 상태
+{"name": "Ada", "email": "ada@example.com"}
+
+PUT /users/usr_42
+{"name": "Grace", "email": "grace@example.com"}
+
+교체 후
+{"name": "Grace", "email": "grace@example.com"}</code></pre>
+<p>PUT에서는 교체할 전체 표현을 보냅니다. Server가 관리하는 id까지 반드시 보내야 한다는 뜻은 아닙니다. 이 예제의 PUT은 name과 email을 모두 요구합니다. 하나를 빠뜨리면 오류로 처리한다고 정합니다. 빠진 field를 몰래 유지하는 방식은 여기서 사용하는 전체 교체 규칙과 맞지 않습니다.</p>
+<pre><code>현재 상태
+{"name": "Ada", "email": "ada@example.com"}
+
+PATCH /users/usr_42
+{"name": "Grace"}
+
+변경 후
+{"name": "Grace", "email": "ada@example.com"}</code></pre>
+<p>이 예제의 PATCH는 보낸 field만 바꾸고 나머지는 유지한다고 정했습니다. PATCH라는 단어만으로 JSON의 해석 규칙이 결정되지는 않습니다. 지원하는 body 형식, 빠진 field의 처리, null의 처리를 문서에 써야 합니다.</p>
+<p>POST는 생성에만 사용할 수 있는 method가 아닙니다. 대상 API에 정의된 처리를 요청할 수 있습니다. PUT도 API가 허용하면 지정한 주소에 새 resource를 만들 수 있습니다.</p>
+<p class="source">동작의 근거: <a href="https://httpwg.org/specs/rfc9110.html#methods">RFC 9110 §9</a>, <a href="https://www.rfc-editor.org/rfc/rfc5789">RFC 5789 §2</a>. Field 구성은 이 수업의 예제 정책입니다.</p>
+<details><summary>확인: 사용자의 이름만 바꾸고 email은 유지하려면 이 예제에서는 무엇을 보낼까요?</summary><p>PATCH /users/usr_42에 {"name": "Grace"}를 보냅니다. 이름 변경이라는 요구가 부분 변경 규칙과 맞기 때문입니다.</p></details>
+
+<h2 id="repeat">7. Safe와 idempotent: 요청을 반복하면?</h2>
+<p>Client가 요청을 보낸 뒤 응답을 받지 못할 수 있습니다. 이때 요청이 실패했는지, 처리는 끝났지만 응답만 사라졌는지 바로 알 수 없습니다. 그래서 같은 요청을 다시 보내도 되는지 생각해야 합니다.</p>
+<p><strong>Safe</strong>는 client가 요청한 동작이 서버 상태의 변경을 요구하지 않는다는 성질입니다. GET이 대표적입니다. Server가 접속 로그를 기록하는 것까지 금지한다는 뜻은 아닙니다.</p>
+<p><strong>Idempotent</strong>는 동일한 요청을 여러 번 처리해도, 의도한 서버 상태의 효과가 한 번 처리한 것과 같다는 성질입니다. 응답 내용이나 status code가 매번 같다는 뜻은 아닙니다.</p>
+<ol><li>사용자 usr_42를 삭제합니다. 삭제 후에는 사용자가 없습니다.</li><li>같은 사용자를 다시 삭제하려고 합니다. 여전히 사용자가 없습니다.</li><li>첫 응답은 성공이고 두 번째 응답은 “없음”일 수 있습니다. 그래도 의도한 최종 상태는 같습니다.</li></ol>
+<table><thead><tr><th>Method</th><th>Safe</th><th>Idempotent</th></tr></thead><tbody><tr><td>GET</td><td>예</td><td>예</td></tr><tr><td>POST</td><td>아니요</td><td>보장하지 않음</td></tr><tr><td>PUT</td><td>아니요</td><td>예</td></tr><tr><td>PATCH</td><td>아니요</td><td>보장하지 않음</td></tr><tr><td>DELETE</td><td>아니요</td><td>예</td></tr></tbody></table>
+<p>“name을 Grace로 설정”하는 PATCH는 반복해도 같은 값이 됩니다. 반면 “점수를 1 올림”이라는 변경 규칙은 반복할 때마다 점수가 증가합니다. PATCH의 반복 효과는 실제 변경 규칙에 달려 있습니다.</p>
+<p class="source">근거: <a href="https://httpwg.org/specs/rfc9110.html#safe.methods">RFC 9110 §9.2</a>, <a href="https://www.rfc-editor.org/rfc/rfc5789">RFC 5789 §2</a>.</p>
+<details><summary>확인: POST /users의 응답이 오지 않았습니다. 같은 요청을 바로 반복하면 항상 안전할까요?</summary><p>아니요. 첫 생성이 이미 끝났을 수 있습니다. 중복 요청을 구별하는 별도의 규칙이 없다면 또 생성될 수 있습니다. 실제 결과는 중복 email 제한 등 API 정책에도 달려 있습니다.</p></details>
+
+<h2 id="response">8. Status code와 오류 응답</h2>
+<p><strong>Status code</strong>는 response의 처리 결과를 나타내는 세 자리 숫자입니다. 첫 자리로 큰 범주를 구별합니다. <code>2xx</code>의 xx는 나머지 두 자리를 뜻합니다.</p>
+<table><thead><tr><th>범주</th><th>의미</th></tr></thead><tbody><tr><td>1xx</td><td>처리 도중의 정보</td></tr><tr><td>2xx</td><td>성공</td></tr><tr><td>3xx</td><td>다른 위치 사용 등 추가 조치</td></tr><tr><td>4xx</td><td>요청을 처리할 수 없는 client 측 조건</td></tr><tr><td>5xx</td><td>Server 측 처리 실패</td></tr></tbody></table>
+<p>아래 표의 상황은 이번 사용자 API에서 정한 예시입니다. 모든 API가 같은 입력 오류에 반드시 같은 code를 쓰는 것은 아닙니다.</p>
+<table><thead><tr><th>Code</th><th>이름</th><th>예시</th></tr></thead><tbody><tr><td>200</td><td>OK</td><td>사용자 조회 성공, body에 결과 포함</td></tr><tr><td>201</td><td>Created</td><td>새 사용자 생성 완료</td></tr><tr><td>204</td><td>No Content</td><td>삭제 완료, 응답 body 없음</td></tr><tr><td>400</td><td>Bad Request</td><td>JSON 문법이 깨진 요청</td></tr><tr><td>401</td><td>Unauthorized</td><td>유효한 인증 정보 없음</td></tr><tr><td>403</td><td>Forbidden</td><td>작업을 허용하지 않음</td></tr><tr><td>404</td><td>Not Found</td><td>요청한 사용자 없음</td></tr><tr><td>409</td><td>Conflict</td><td>이미 등록된 email과 충돌</td></tr><tr><td>422</td><td>Unprocessable Content</td><td>JSON은 읽었지만 email 값이 입력 규칙에 맞지 않음</td></tr><tr><td>500</td><td>Internal Server Error</td><td>예상하지 못한 내부 처리 실패</td></tr></tbody></table>
+<p>401은 <code>WWW-Authenticate</code> header로 인증 방식 안내를 포함해야 합니다. 403은 반드시 “로그인한 사람”에게만 사용하는 code는 아닙니다. 여기서는 인증된 사용자가 다른 사람의 정보를 수정하려는 경우를 예로 듭니다.</p>
+<p><strong>Authorization</strong>은 해당 작업을 허용할지 확인하는 과정입니다. Authentication으로 누군지 확인했어도, 모든 작업을 허용하는 것은 아닙니다.</p>
+<h3>사람과 프로그램이 모두 처리할 수 있는 오류</h3>
+<p><strong>Validation</strong>은 입력이 정한 규칙을 만족하는지 검사하는 과정입니다. 예를 들어 email에 필요한 형식이 있는지 확인합니다. 아래 오류 모양은 이번 수업의 자체 규칙입니다.</p>
+<pre><code class="language-json">{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Email format is invalid",
+    "details": [
+      {"field": "email", "reason": "invalid_format"}
+    ]
+  }
+}</code></pre>
+<ol><li>Client는 HTTP status code 422로 입력 관련 실패임을 확인합니다.</li><li>error.code로 처리할 오류 종류를 고릅니다.</li><li>details의 field를 읽고 email 입력칸을 표시합니다.</li><li>사용자에게 email을 고치라는 안내를 보여줍니다.</li></ol>
+<p>message는 설명 문장입니다. 번역이나 표현 변경으로 바뀔 수 있습니다. Client의 처리 조건을 message 문장과의 일치 여부로 만들지 않습니다. Code와 details의 의미를 안정적으로 유지합니다.</p>
+<p>내부 실행 경로나 database 명령 전체를 오류 응답에 넣지 않습니다. 개발용 진단 정보는 server 쪽에 기록하고, client에는 필요한 안내를 보냅니다.</p>
+<p class="source">Status 의미의 근거: <a href="https://httpwg.org/specs/rfc9110.html#status.codes">RFC 9110 §15</a>. 표의 상황과 오류 JSON은 이 수업에서 선택한 정책입니다.</p>
+<details><summary>확인: GET /users 결과가 빈 목록이면 반드시 404일까요?</summary><p>아니요. 목록 resource가 있고 구성원만 없다면 200과 {"items": []}를 돌려줄 수 있습니다. 특정 사용자를 찾지 못한 상황과 구별합니다.</p></details>
+
+<h2 id="walkthrough">9. 사용자 생성부터 삭제까지 추적하기</h2>
+<p>지금부터 같은 사용자 usr_42를 계속 사용합니다. HTTP/1.1은 예시에 사용한 HTTP 버전 표시입니다. Host는 요청할 서버 이름입니다. Location은 새로 만든 resource의 주소를 알려주는 response header입니다.</p>
+<h3>① Create: 사용자 만들기</h3>
+<pre><code class="language-http">POST /users HTTP/1.1
+Host: api.example.com
+Content-Type: application/json
+Accept: application/json
+
+{"name":"Ada","email":"ada@example.com"}</code></pre>
+<ol><li>POST로 사용자 생성 처리를 요청합니다.</li><li>/users는 사용자를 추가할 목록입니다.</li><li>Content-Type은 보내는 body의 형식을 알려줍니다.</li><li>빈 줄 뒤의 body에 이름과 email을 넣습니다.</li><li>Server는 입력과 email 중복을 검사합니다.</li><li>Server는 새 사용자를 저장하고 식별값 usr_42를 부여합니다.</li></ol>
+<pre><code class="language-http">HTTP/1.1 201 Created
+Location: /users/usr_42
+Content-Type: application/json
+
+{"id":"usr_42","name":"Ada","email":"ada@example.com"}</code></pre>
+<p>201은 생성 완료를 나타냅니다. Location으로 새 주소를 알려줍니다. Body에는 이 client에게 제공하기로 한 사용자 정보를 담습니다.</p>
+<h3>② Read: 만든 사용자 읽기</h3>
+<pre><code class="language-http">GET /users/usr_42 HTTP/1.1
+Host: api.example.com
+Accept: application/json</code></pre>
+<pre><code class="language-http">HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"id":"usr_42","name":"Ada","email":"ada@example.com"}</code></pre>
+<p>Client는 생성 응답에서 받은 식별값을 path에 넣습니다. 이 GET 요청에는 body가 필요하지 않습니다. 일반적인 조회 조건은 query로 보냅니다.</p>
+<h3>③ Update: 이름만 바꾸기</h3>
+<p>이 API는 application/json 형식의 자체 PATCH 규칙을 사용합니다. name과 email만 수정할 수 있습니다. 빠진 field는 유지합니다. null은 허용하지 않습니다.</p>
+<pre><code class="language-http">PATCH /users/usr_42 HTTP/1.1
+Host: api.example.com
+Content-Type: application/json
+
+{"name":"Grace"}</code></pre>
+<pre><code class="language-http">HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"id":"usr_42","name":"Grace","email":"ada@example.com"}</code></pre>
+<p>이름은 바뀌었습니다. Email은 그대로입니다. 수정한 결과를 body에 담기로 했으므로 200을 사용합니다. Body를 보내지 않는 정책이라면 204를 사용할 수 있습니다.</p>
+<h3>④ Delete: 사용자 삭제하기</h3>
+<pre><code class="language-http">DELETE /users/usr_42 HTTP/1.1
+Host: api.example.com</code></pre>
+<pre><code class="language-http">HTTP/1.1 204 No Content</code></pre>
+<p>204 뒤에는 JSON body를 붙이지 않습니다. 이 API에서는 삭제한 사용자를 다시 조회하면 404를 돌려줍니다. 실제 저장 기록을 언제 지울지는 별도의 내부 정책입니다.</p>
+<details><summary>확인: 204 응답에 {"success": true}를 함께 보내도 될까요?</summary><p>안 됩니다. 204는 응답 내용이 없다는 뜻입니다. 성공 데이터를 body로 보내려면 200 등 목적에 맞는 응답을 선택합니다.</p></details>
+
+<h2 id="rest">10. REST가 요구하는 설계 제약</h2>
+<p><strong>REST</strong>는 Representational State Transfer의 약자입니다. 네트워크로 연결된 시스템의 구성과 상호작용을 제한하는 설계 방식입니다. 이러한 설계 방식을 <strong>architectural style</strong>이라고 부릅니다.</p>
+<p>HTTP API는 HTTP로 기능을 제공하는 API입니다. 그중 REST 제약에 따라 설계한 API를 REST API라고 부릅니다. URL에 명사를 쓰고 JSON을 보낸다는 사실만으로 모든 REST 제약을 만족하지는 않습니다.</p>
+<p>먼저 필요한 용어를 정의합니다. <strong>Cache</strong>는 나중에 재사용하려고 저장한 응답입니다. <strong>Layer</strong>는 통신을 처리하는 중간 단계입니다. <strong>Interface</strong>는 외부에서 기능을 사용하는 방식입니다.</p>
+<table><thead><tr><th>제약</th><th>의미</th></tr></thead><tbody><tr><td>Client–server</td><td>화면을 사용하는 쪽과 요청을 처리하는 쪽의 책임을 분리합니다.</td></tr><tr><td>Stateless</td><td>각 요청에 처리에 필요한 정보를 담습니다. 이전 요청의 대화 상태를 서버가 기억해야만 해석되는 요청을 피합니다.</td></tr><tr><td>Cache</td><td>응답을 재사용할 수 있는지 알 수 있게 합니다.</td></tr><tr><td>Uniform interface</td><td>Resource 식별과 representation 사용 등 공통된 상호작용 규칙을 사용합니다.</td></tr><tr><td>Layered system</td><td>Client는 직접 연결한 단계 뒤의 모든 내부 구성을 알 필요가 없습니다.</td></tr><tr><td>Code-on-demand</td><td>Client가 실행할 코드를 제공할 수 있습니다. 선택적인 제약입니다.</td></tr></tbody></table>
+<h3>Stateless는 database를 없애라는 뜻이 아닙니다</h3>
+<p>“아까 말한 사용자의 이름을 바꿔 줘”라는 요청은 이전 대화를 알아야 이해할 수 있습니다. 반면 “usr_42의 이름을 Grace로 바꿔 줘”라는 요청은 대상을 포함합니다. 필요한 인증 정보도 각 요청에 포함하도록 설계합니다. 저장된 사용자 데이터가 존재하는 것과 요청 사이의 대화 상태에 의존하는 것은 다릅니다.</p>
+<details><summary>심화: Uniform interface에는 무엇이 더 포함될까요?</summary><p>원래 REST는 resource 식별, representation을 통한 조작, 스스로 해석에 필요한 정보를 담은 메시지, hypermedia로 다음 동작을 안내하는 것을 요구합니다.</p><p><strong>Hypermedia</strong>는 데이터에 링크나 다음 동작을 안내하는 정보를 포함하는 방식입니다. 예를 들어 응답이 다음 페이지 주소를 제공하면 client가 그 주소를 따라갈 수 있습니다. 링크 하나를 넣었다고 모든 REST 제약을 충족하는 것은 아닙니다.</p><p>실무에서 REST API라고 부르는 API 중에는 이러한 제약을 일부만 적용한 API도 있습니다. 이번 수업의 CRUD 예제는 resource 중심 HTTP API 설계를 연습하기 위한 것입니다. 완전한 REST 시스템 구현을 주장하지 않습니다.</p></details>
+<p class="source">원전: <a href="https://ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm">Roy Fielding, dissertation chapter 5</a>.</p>
+<details><summary>확인: Server가 사용자 정보를 database에 저장하면 stateless를 위반할까요?</summary><p>아니요. Resource의 데이터를 저장할 수 있습니다. Stateless는 각 요청을 처리하기 위해 이전 대화 상태에 의존하는지를 다룹니다.</p></details>
+
+<h2 id="pagination">11. Pagination: 목록을 나누어 가져오기</h2>
+<p>사용자가 100만 명이면 전체 목록을 한 번에 보내는 데 많은 시간과 메모리가 필요합니다. <strong>Pagination</strong>은 목록을 일정한 크기로 나누어 가져오는 방식입니다. 한 번에 가져오는 묶음을 page라고 부릅니다.</p>
+<h3>Offset: 앞에서 몇 개를 건너뛸까?</h3>
+<p><strong>Limit</strong>은 최대 몇 개를 가져올지 나타냅니다. <strong>Offset</strong>은 앞에서 몇 개를 건너뛸지 나타냅니다. 예제 목록의 순서는 A, B, C, D, E입니다. 각 글자는 사용자 한 명을 뜻합니다.</p>
+<pre><code>GET /users?limit=2&amp;offset=0  → A, B
+GET /users?limit=2&amp;offset=2  → C, D
+GET /users?limit=2&amp;offset=4  → E</code></pre>
+<p>첫 요청은 0개를 건너뛰고 2개를 읽습니다. 두 번째 요청은 2개를 건너뛰고 다음 2개를 읽습니다. 이렇게 페이지의 위치를 숫자로 지정할 수 있습니다.</p>
+<p>그런데 첫 요청 후 목록 맨 앞에 X가 추가되면 어떻게 될까요?</p>
+<ol><li>첫 요청에서 A, B를 받습니다.</li><li>목록이 X, A, B, C, D, E로 바뀝니다.</li><li>Offset 2는 이제 X와 A를 건너뜁니다.</li><li>두 번째 요청에서 B, C를 받습니다. B가 중복됩니다.</li></ol>
+<p>첫 페이지의 항목이 삭제되면 다음 페이지의 항목을 건너뛸 수도 있습니다. 또한 database가 큰 offset만큼 건너뛸 데이터를 처리해야 하면 느려질 수 있습니다. 결과를 정렬하는 기준도 항상 정해야 합니다.</p>
+<p class="source">Database의 LIMIT/OFFSET 동작: <a href="https://www.postgresql.org/docs/current/queries-limit.html">PostgreSQL documentation §7.6</a>. A–E 변화는 원리를 설명하기 위한 예시입니다.</p>
+<h3>Cursor: 어느 항목 다음부터 가져올까?</h3>
+<p><strong>Cursor</strong>는 다음 조회를 시작할 위치를 나타내는 값입니다. 아래 예제에서는 server가 B 다음 위치를 <code>after_B</code>라는 값으로 표현했다고 가정합니다. 실제 API에서는 이 값을 client가 해석하지 않고 그대로 돌려보내도록 만들 수 있습니다.</p>
+<pre><code class="language-json">{
+  "items": [{"id": "A"}, {"id": "B"}],
+  "nextCursor": "after_B"
+}</code></pre>
+<pre><code>GET /users?limit=2&amp;cursor=after_B  → C, D</code></pre>
+<p>Client는 첫 응답의 nextCursor를 다음 요청의 cursor에 넣습니다. 목록 앞에 X가 추가되어도 “B 다음”이라는 기준을 사용합니다. 이 예제에서는 C, D를 계속 가져옵니다.</p>
+<p>Cursor도 모든 중복과 누락을 자동으로 없애지는 않습니다. 정렬 기준 값이 바뀌거나 항목이 삭제되는 상황의 처리 정책이 필요합니다. 같은 정렬 값이 여러 개라면 식별값 등 추가 기준으로 순서를 확정해야 합니다.</p>
+<table><thead><tr><th>정할 정책</th><th>예제</th></tr></thead><tbody><tr><td>기본 page 크기</td><td>20개</td></tr><tr><td>최대 page 크기</td><td>100개. 초과 입력은 422</td></tr><tr><td>정렬 기준</td><td>생성 시각 순서. 같으면 식별값 순서</td></tr><tr><td>마지막 page 표시</td><td>nextCursor가 null</td></tr><tr><td>잘못된 cursor</td><td>400과 INVALID_CURSOR 오류</td></tr></tbody></table>
+<details><summary>확인: nextCursor가 null인 응답을 받으면 client는 무엇을 해야 할까요?</summary><p>이 API의 정책에서는 다음 페이지가 없으므로 추가 조회를 멈춥니다. 예를 들어 “더 보기” 버튼을 비활성화할 수 있습니다.</p></details>
+
+<h2 id="compatibility">12. Compatibility와 versioning</h2>
+<p><strong>Backward compatibility</strong>는 API를 변경해도 기존 client가 계속 동작하는 성질입니다. 모든 사용자가 같은 날 앱을 업데이트한다고 가정하면 안 됩니다.</p>
+<pre><code>기존 응답: {"id": "usr_42", "name": "Ada"}
+변경 응답: {"id": "usr_42", "displayName": "Ada"}</code></pre>
+<p>기존 client가 name을 읽는다면 변경 후 값을 찾지 못합니다. 이처럼 기존 동작을 깨뜨리는 변경을 <strong>breaking change</strong>라고 합니다.</p>
+<table><thead><tr><th>변경</th><th>영향</th></tr></thead><tbody><tr><td>응답에 선택적인 field 추가</td><td>Client가 모르는 field를 무시하면 대체로 호환됩니다.</td></tr><tr><td>name 삭제 또는 이름 변경</td><td>name을 사용하는 client가 실패합니다.</td></tr><tr><td>숫자를 string으로 변경</td><td>숫자 계산이나 입력 검사가 실패할 수 있습니다.</td></tr><tr><td>요청에 필수 field 추가</td><td>이 값을 보내지 않던 client가 실패합니다.</td></tr><tr><td>같은 field의 단위 변경</td><td>Code가 실행되어도 잘못된 값을 계산할 수 있습니다.</td></tr></tbody></table>
+<p><strong>Versioning</strong>은 API의 서로 다른 계약을 구별하는 방식입니다. 예를 들어 <code>/v1/users</code>와 <code>/v2/users</code>를 사용할 수 있습니다. Version 숫자를 추가한다고 기존 client가 자동으로 고쳐지지는 않습니다.</p>
+<ol><li>무엇이 바뀌는지 문서화합니다.</li><li>기존 version의 지원 기간을 정합니다.</li><li>Client가 새 version으로 바꾸는 방법을 안내합니다.</li><li>지원 기간 동안 기존 요청이 계속 동작하는지 확인합니다.</li></ol>
+<details><summary>확인: 응답 field 추가는 언제나 호환될까요?</summary><p>언제나는 아닙니다. 알 수 없는 field가 있으면 거부하는 client도 있을 수 있습니다. Client의 처리 방식과 합의한 계약을 확인해야 합니다.</p></details>
+
+<h2 id="practice">13. 직접 설계하고 설명하기</h2>
+<p>먼저 문제를 풀고 해설을 여세요. 정답 문자열을 외우기보다 대상, 동작, 입력, 결과를 각각 설명하는 것이 목표입니다.</p>
+<h3>실행 실습 — main.py 하나에서 전체 흐름 확인</h3>
+<p><strong>FastAPI</strong>는 Python으로 HTTP 요청을 처리하고 응답하는 프로그램을 만들도록 돕는 도구입니다. 현재 수업은 FastAPI를 설치하고 main.py를 실행할 수 있는 상태에서 시작합니다. 아래는 독립적으로 실행할 수 있는 최소 예제입니다. 기존 main.py가 있다면 app 생성은 그대로 두고, 같은 경로가 없는지 확인한 뒤 조회 함수를 추가하세요.</p>
+<p>코드를 읽기 전에 문법을 확인합니다. <code>from ... import ...</code>는 사용할 기능을 가져옵니다. <code>=</code>는 오른쪽 값을 왼쪽 이름에 저장합니다. <code>FastAPI()</code>는 요청을 처리할 앱을 만듭니다. <code>@app.get(...)</code>은 GET 요청 경로를 바로 아래 함수에 연결합니다. <code>def</code>는 함수를 정의합니다. <code>return</code>은 함수의 결과를 돌려줍니다.</p>
+<pre><code class="language-python">from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/users/42")
+def read_user():
+    return {"id": "42", "name": "Ada"}</code></pre>
+<p><code>read_user</code>는 함수 이름입니다. 괄호가 비어 있으므로 여기서는 입력을 받지 않습니다. 함수 정의 끝의 <code>:</code> 다음에는 들여쓴 실행 코드가 옵니다. 마지막 줄의 중괄호는 Python의 <strong>dictionary</strong>입니다. 이름과 값을 묶는 자료 구조입니다. FastAPI가 이 값을 JSON 응답으로 변환합니다.</p>
+<ol><li>위 코드를 실습용 main.py에 저장합니다.</li><li>main.py가 있는 폴더에서 아래 명령을 실행합니다.</li><li>브라우저에서 아래 조회 주소를 엽니다.</li><li>응답에 id와 name이 나오는지 확인합니다.</li></ol>
+<pre><code class="language-shell">uv run fastapi dev main.py</code></pre>
+<p><code>uv run</code>은 프로젝트 환경에서 명령을 실행합니다. <code>fastapi dev</code>는 개발용 server를 실행합니다. 마지막 main.py는 실행할 파일입니다. 기존 수업 프로젝트처럼 app 폴더 안에 파일이 있으면 프로젝트 폴더에서 <code>uv run fastapi dev app/main.py</code>를 사용합니다.</p>
+<pre><code>http://127.0.0.1:8000/users/42</code></pre>
+<p><code>127.0.0.1</code>은 현재 컴퓨터를 가리킵니다. <code>8000</code>은 이 개발용 server가 요청을 받는 port 번호입니다. <strong>Port</strong>는 같은 컴퓨터의 여러 통신 접점을 구분하는 번호입니다. 브라우저 주소창으로 이 주소를 열면 GET 요청을 보냅니다.</p>
+<p>이 예제는 항상 같은 사용자 정보를 돌려줍니다. 사용자를 저장하거나 검색하는 코드는 아직 없습니다. /users/43은 별도로 정의하지 않았으므로 404 응답을 받습니다. 이후에는 path parameter를 사용하여 여러 식별값을 처리할 수 있습니다.</p>
+<details><summary>실행 후 확인: Ada를 Grace로 바꾸면 무엇이 달라질까요?</summary><p>함수가 돌려주는 name 값이 바뀝니다. 저장 후 개발 server가 다시 준비되면 같은 주소를 새로 조회하세요. Endpoint는 그대로이고 response의 데이터가 달라집니다. 이것은 PATCH 요청을 구현한 것이 아니라, 예제 코드에 적힌 값을 직접 바꾼 것입니다.</p></details>
+<p class="source">실행 방식과 함수 연결: <a href="https://fastapi.tiangolo.com/tutorial/first-steps/">FastAPI 공식 First Steps</a>.</p>
+<h3>설계 실습으로 확장하기</h3>
+<p>아래 실습은 코드를 추가하는 과제가 아니라 요청·응답 규칙을 작성하는 과제입니다. main.py에서 확인한 흐름을 생성·수정·삭제까지 확장해 봅니다.</p>
+<h3>실습 1 — 사용자 API 명세 작성</h3>
+<p><strong>명세</strong>는 API의 사용 규칙을 적은 문서입니다. 아래 요구사항을 읽고 각 요청의 method, path, 입력, 성공 응답, 실패 응답을 정하세요.</p>
+<ul><li>사용자 생성에는 name과 email이 필요합니다.</li><li>Name은 앞뒤 공백 제거 후 1~50글자여야 합니다.</li><li>Email은 유효한 형식이어야 하며 중복되면 안 됩니다.</li><li>이름만 수정할 수 있어야 합니다.</li><li>존재하지 않는 사용자를 조회하면 실패를 알려야 합니다.</li><li>목록은 한 번에 최대 100개까지만 조회할 수 있습니다.</li></ul>
+<details><summary>해설: 가능한 명세 예시</summary>
+<table><thead><tr><th>Endpoint</th><th>입력</th><th>성공</th><th>실패</th></tr></thead><tbody><tr><td>POST /users</td><td>Body: name, email</td><td>201, 사용자 JSON, Location</td><td>400 잘못된 JSON / 422 입력 규칙 위반 / 409 email 중복</td></tr><tr><td>GET /users/{id}</td><td>Path: id</td><td>200, 사용자 JSON</td><td>404 사용자 없음</td></tr><tr><td>PATCH /users/{id}</td><td>Path: id, body: name</td><td>200, 변경한 사용자 JSON</td><td>404 사용자 없음 / 422 이름 오류</td></tr><tr><td>GET /users</td><td>Query: limit, cursor</td><td>200, items와 nextCursor</td><td>422 limit 오류 / 400 cursor 오류</td></tr><tr><td>DELETE /users/{id}</td><td>Path: id</td><td>204, body 없음</td><td>404 사용자 없음</td></tr></tbody></table>
+<p>여기서는 기본 limit을 20, 허용 범위를 1~100으로 정합니다. 성공 응답의 field와 정렬 기준도 앞의 예제를 따릅니다. 실제 서비스라면 인증 요구 여부와 field별 공개 범위도 명세에 추가해야 합니다.</p></details>
+<h3>실습 2 — 실패 네 가지 구분</h3>
+<p>잘못된 JSON, 잘못된 email 형식, 중복 email, 없는 사용자 조회에 각각 HTTP status와 error.code를 배정하세요.</p>
+<details><summary>해설: 이번 수업의 정책</summary><ul><li>400 / INVALID_JSON: 데이터를 JSON으로 읽을 수 없습니다.</li><li>422 / VALIDATION_ERROR: JSON은 읽었지만 값이 규칙에 맞지 않습니다.</li><li>409 / EMAIL_ALREADY_EXISTS: 기존 사용자 정보와 충돌합니다.</li><li>404 / USER_NOT_FOUND: 지정한 사용자가 없습니다.</li></ul><p>error.code의 문자열은 HTTP 표준이 정한 값이 아닙니다. 팀에서 정한 규칙입니다. Client와 공유하고 일관되게 유지해야 합니다.</p></details>
+<h3>실습 3 — API와 database 구조 분리</h3>
+<p>Database의 모든 열을 응답에 복사하면 어떤 문제가 생길까요? 두 가지를 설명하세요.</p>
+<details><summary>해설</summary><p>첫째, 내부 정보나 민감한 정보가 노출될 수 있습니다. 둘째, database 구조를 바꿀 때 client까지 바꿔야 할 수 있습니다. 공개할 field를 별도로 정의하면 내부 저장 방식과 외부 계약을 분리하기 쉬워집니다.</p></details>
+<h3>실습 4 — 로그인 동작 설계</h3>
+<p><strong>Session</strong>은 로그인 상태를 관리하는 맥락에서 사용하는 개념입니다. 로그인 결과로 session resource를 만든다고 설계할 수 있습니다. <code>POST /sessions</code>와 <code>POST /login</code> 중 하나를 선택하고 그 이유를 설명하세요.</p>
+<details><summary>해설</summary><p>POST /sessions는 “로그인 session 만들기”로 모델링한 설계입니다. POST /login은 “로그인 처리”를 직접 이름 붙인 설계입니다. 명사형 여부만으로 품질을 판정할 수 없습니다. 생성 결과와 종료 방법, 인증 규칙이 명확한지 확인해야 합니다. 서버에 저장된 대화 session에 의존하는 방식이 원래 REST의 stateless 제약을 만족하는지도 별도로 검토해야 합니다.</p></details>
+
+
+<p>이번 주의 결과물은 main.py의 조회 예제와 요청·응답 명세입니다. 다음 주에는 로컬 database에 연습용 사용자 데이터를 넣고, main.py에서 연결하여 목록과 사용자 한 명을 조회합니다. <a href="week-06.html">Week 06으로 이동 →</a></p>
+</article>
+      <nav class="pager" aria-label="이전 및 다음 문서"><a class="pager-link previous" href="week-04.html"><span>이전</span><strong>Week 04 · HTTP/HTTPS 2탄</strong></a><a class="pager-link next" href="week-06.html"><span>다음</span><strong>Week 06 · Local DB &amp; API 조회</strong></a></nav>
+      <footer class="document-footer">
+        <span>2026 Fall Backend Study</span>
+        <a href="index.html">전체 커리큘럼으로</a>
+      </footer>
+    </div>
+  </main>
+  <script>
+(() => {
+  const root = document.documentElement;
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem("backend-study-theme");
+  } catch {
+    // Some browsers restrict storage for files opened directly from disk.
+  }
+  const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = savedTheme || (preferredDark ? "dark" : "light");
+
+  document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem("backend-study-theme", next);
+    } catch {
+      // The current page still changes theme even when storage is unavailable.
+    }
+  });
+
+  const sidebar = document.querySelector(".sidebar");
+  const menuToggle = document.querySelector(".menu-toggle");
+  menuToggle?.addEventListener("click", () => {
+    const isOpen = sidebar?.classList.toggle("open") ?? false;
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (window.innerWidth > 900 || !sidebar?.classList.contains("open")) return;
+    if (sidebar.contains(event.target) || menuToggle?.contains(event.target)) return;
+    sidebar.classList.remove("open");
+    menuToggle?.setAttribute("aria-expanded", "false");
+  });
+
+  document.querySelectorAll("pre").forEach((block) => {
+    const button = document.createElement("button");
+    button.className = "copy-code";
+    button.type = "button";
+    button.textContent = "COPY";
+    button.setAttribute("aria-label", "코드 복사");
+    button.addEventListener("click", async () => {
+      const code = block.querySelector("code")?.textContent ?? "";
+      let copied = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+          copied = true;
+        }
+      } catch {
+        copied = false;
+      }
+      if (!copied) {
+        const textarea = document.createElement("textarea");
+        textarea.value = code;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.append(textarea);
+        textarea.select();
+        copied = document.execCommand("copy");
+        textarea.remove();
+      }
+      button.textContent = copied ? "COPIED" : "SELECT & COPY";
+      window.setTimeout(() => (button.textContent = "COPY"), 1200);
+    });
+    block.append(button);
+  });
+
+  const progressBar = document.querySelector(".reading-progress span");
+  const updateProgress = () => {
+    const distance = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = distance > 0 ? (window.scrollY / distance) * 100 : 0;
+    if (progressBar) progressBar.style.width = `${Math.min(100, progress)}%`;
+  };
+  document.addEventListener("scroll", updateProgress, { passive: true });
+  updateProgress();
+
+  const diagrams = document.querySelectorAll(".mermaid");
+  if (diagrams.length) {
+    import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs")
+      .then(({ default: mermaid }) => {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: root.dataset.theme === "dark" ? "dark" : "neutral",
+          securityLevel: "strict",
+          fontFamily: "system-ui, sans-serif",
+        });
+        return mermaid.run({ nodes: diagrams });
+      })
+      .catch(() => {
+        diagrams.forEach((diagram) => diagram.classList.add("mermaid-unavailable"));
+      });
+  }
+})();
+
+  </script>
+</body>
+</html>

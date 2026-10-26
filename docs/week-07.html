@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="2026 LikeLion Backend Study — Python과 FastAPI로 배우는 14주 백엔드 커리큘럼">
+  <title>Week 07 — Shared DB & User CRUD · LikeLion Backend Study</title>
+  <style>
+:root {
+  color-scheme: light;
+  --paper: #f4f1e8;
+  --paper-raised: #fffdf7;
+  --ink: #16211d;
+  --muted: #68736d;
+  --line: #c9cec8;
+  --accent: #ff5c35;
+  --accent-soft: #ffe1d7;
+  --forest: #123b2e;
+  --code: #11201b;
+  --code-ink: #e7f5ec;
+  --sidebar-width: 292px;
+  --content-width: 850px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #101713;
+  --paper-raised: #17201b;
+  --ink: #edf4ef;
+  --muted: #a9b5ae;
+  --line: #35423b;
+  --accent: #ff7959;
+  --accent-soft: #4a291f;
+  --forest: #b9efcf;
+  --code: #09100d;
+  --code-ink: #dff4e6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Pretendard, "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+  line-height: 1.78;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -5rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  display: flex;
+  width: var(--sidebar-width);
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.brand-block {
+  padding: 2rem 1.65rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: block;
+  text-decoration: none;
+}
+
+.brand span,
+.page-meta,
+.sidebar-footer,
+.pager-link span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.brand span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.brand strong {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+
+.brand-block p {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.week-nav {
+  display: grid;
+  padding: 0.8rem;
+  gap: 0.18rem;
+}
+
+.week-nav a {
+  display: grid;
+  grid-template-columns: 4.7rem 1fr;
+  align-items: baseline;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  text-decoration: none;
+}
+
+.week-nav a:hover {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.week-nav a.active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: var(--paper-raised);
+}
+
+[data-theme="dark"] .week-nav a.active {
+  background: #234b3b;
+  color: #f7fff9;
+}
+
+.week-nav span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+}
+
+.week-nav a.active span {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.week-nav strong {
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+
+.sidebar-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 1rem 1.55rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.theme-toggle,
+.menu-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.theme-toggle:hover,
+.menu-toggle:hover {
+  color: var(--accent);
+}
+
+main {
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+}
+
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto var(--sidebar-width);
+  z-index: 30;
+  height: 3px;
+  background: transparent;
+}
+
+.reading-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+}
+
+.article-shell {
+  width: min(calc(100% - 3rem), var(--content-width));
+  margin: 0 auto;
+  padding: 4.3rem 0 3rem;
+}
+
+.page-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3.8rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+article > h1:first-child {
+  max-width: 790px;
+  margin: 0 0 3.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-weight: 600;
+  letter-spacing: -0.064em;
+  line-height: 0.98;
+}
+
+.overview article > h1:first-child {
+  font-size: clamp(3.25rem, 7.3vw, 6.75rem);
+}
+
+article > p:nth-child(2) {
+  color: var(--muted);
+}
+
+h2 {
+  margin: 4.8rem 0 1.45rem;
+  padding-top: 1.2rem;
+  border-top: 3px solid var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+h3 {
+  margin: 3rem 0 0.8rem;
+  color: var(--forest);
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+h4 {
+  margin: 2rem 0 0.5rem;
+}
+
+.heading-anchor {
+  margin-left: 0.35rem;
+  color: var(--line);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+.heading-anchor:focus {
+  opacity: 1;
+}
+
+p,
+li {
+  font-size: 1rem;
+}
+
+strong {
+  font-weight: 750;
+}
+
+blockquote {
+  margin: 2rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 0;
+  border-left: 5px solid var(--accent);
+  background: var(--accent-soft);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+}
+
+blockquote p {
+  margin: 0;
+  font-size: inherit;
+}
+
+ul,
+ol {
+  padding-left: 1.35rem;
+}
+
+li + li {
+  margin-top: 0.35rem;
+}
+
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.45rem;
+  accent-color: var(--accent);
+  vertical-align: -0.12rem;
+}
+
+table {
+  display: table;
+  width: 100%;
+  margin: 1.75rem 0 2.5rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  padding: 0.75rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  border-bottom: 2px solid var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+code {
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+p code,
+li code,
+td code {
+  padding: 0.13em 0.35em;
+}
+
+pre {
+  position: relative;
+  margin: 1.7rem 0 2.2rem;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--code-ink) 15%, transparent);
+  border-radius: 0.45rem;
+  background: var(--code);
+  color: var(--code-ink);
+  box-shadow: 0 1.2rem 2.5rem rgb(10 22 16 / 10%);
+}
+
+pre code {
+  display: block;
+  min-width: max-content;
+  padding: 1.35rem 1.45rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.copy-code {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 0.25rem;
+  background: rgb(0 0 0 / 28%);
+  color: #dce9e1;
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+}
+
+.mermaid {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 2rem 0 2.5rem;
+  overflow-x: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  background: var(--paper-raised);
+  text-align: center;
+}
+
+.pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 6rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.pager-link {
+  display: flex;
+  min-height: 7.5rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.2rem;
+  text-decoration: none;
+}
+
+.pager-link + .pager-link {
+  border-left: 1px solid var(--line);
+}
+
+.pager-link.next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.pager-link:hover {
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.pager-link span {
+  color: var(--accent);
+  font-size: 0.65rem;
+}
+
+.pager-link strong {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.document-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper-raised) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .mobile-brand {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+
+  .menu-toggle {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 0.25rem;
+    font-size: 0.72rem;
+  }
+
+  .sidebar {
+    top: 3.5rem;
+    width: min(88vw, 330px);
+    transform: translateX(-102%);
+    box-shadow: 1rem 0 2rem rgb(0 0 0 / 16%);
+    transition: transform 180ms ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  main {
+    margin-left: 0;
+  }
+
+  .reading-progress {
+    left: 0;
+  }
+
+  .article-shell {
+    width: min(calc(100% - 2rem), var(--content-width));
+    padding-top: 2.2rem;
+  }
+
+  .page-meta {
+    margin-bottom: 2.5rem;
+  }
+}
+
+@media (max-width: 620px) {
+  article > h1:first-child {
+    margin-bottom: 2.6rem;
+    font-size: 2.65rem;
+  }
+
+  .overview article > h1:first-child {
+    font-size: 3.15rem;
+  }
+
+  h2 {
+    margin-top: 3.8rem;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .page-meta span:last-child {
+    display: none;
+  }
+
+  .pager {
+    grid-template-columns: 1fr;
+  }
+
+  .pager-link.next {
+    grid-column: 1;
+  }
+
+  .pager-link + .pager-link {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .document-footer {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
+@media print {
+  .sidebar,
+  .mobile-header,
+  .reading-progress,
+  .pager,
+  .copy-code {
+    display: none !important;
+  }
+
+  main {
+    margin: 0;
+  }
+
+  .article-shell {
+    width: 100%;
+    padding: 0;
+  }
+}
+
+  
+.lesson-toc, details { padding: 1.1rem 1.3rem; border: 1px solid var(--line); border-radius: .4rem; background: var(--paper-raised); margin: 1.5rem 0; }
+summary { cursor: pointer; font-weight: 700; }
+details[open] summary { margin-bottom: 1rem; }
+article { overflow-wrap: anywhere; }
+pre code { overflow-wrap: normal; padding-top: 2.6rem; }
+h2[id], h3[id] { scroll-margin-top: 5rem; }
+@media print { details { display: block; } pre { white-space: pre-wrap; } pre code { min-width: 0; white-space: pre-wrap; } }
+</style>
+</head>
+<body class="lesson">
+  <a class="skip-link" href="#content">본문으로 건너뛰기</a>
+  <header class="mobile-header">
+    <a class="mobile-brand" href="index.html">LIKELION / BACKEND</a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">목차</button>
+  </header>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-block">
+      <a class="brand" href="index.html"><span>LIKELION</span><strong>BACKEND<br>STUDY</strong></a>
+      <p>Python · FastAPI · PostgreSQL</p>
+    </div>
+    <nav class="week-nav" aria-label="커리큘럼"><a href="index.html"><span>Overview</span><strong>14주 전체 로드맵</strong></a>
+<a href="week-01.html"><span>Week 01</span><strong>Git & GitHub I</strong></a>
+<a href="week-02.html"><span>Week 02</span><strong>Git & GitHub II</strong></a>
+<a href="week-03.html"><span>Week 03</span><strong>HTTP/HTTPS 1탄</strong></a>
+<a href="week-04.html"><span>Week 04</span><strong>HTTP/HTTPS 2탄</strong></a>
+<a href="week-05.html"><span>Week 05</span><strong>REST API</strong></a>
+<a href="week-06.html"><span>Week 06</span><strong>Local DB &amp; API 조회</strong></a>
+<a href="week-07.html" aria-current="page" class="active"><span>Week 07</span><strong>User CRUD &amp; Validation</strong></a>
+<a href="week-08.html"><span>Week 08</span><strong>Backend Layers</strong></a>
+<a href="week-09.html"><span>Week 09</span><strong>Database II</strong></a>
+<a href="week-10.html"><span>Week 10</span><strong>Docker & DB</strong></a>
+<a href="week-11.html"><span>Week 11</span><strong>SQLAlchemy ORM</strong></a>
+<a href="week-12.html"><span>Week 12</span><strong>Authentication I</strong></a>
+<a href="week-13.html"><span>Week 13</span><strong>Authentication II</strong></a>
+<a href="week-14.html"><span>Week 14</span><strong>Final Integration</strong></a></nav>
+    <div class="sidebar-footer">
+      <span>2026 FALL</span>
+      <button class="theme-toggle" type="button" aria-label="색상 테마 전환">LIGHT / DARK</button>
+    </div>
+  </aside>
+  <main id="content">
+    <div class="reading-progress" aria-hidden="true"><span></span></div>
+    <div class="article-shell">
+      <div class="page-meta"><span>WEEK 07 · 14</span><span>PYTHON 3.13 · FASTAPI</span></div>
+      <article>
+<h1>Week 07 — Shared DB &amp; User CRUD</h1>
+<p>Session으로 연결하고, 같은 데이터의 변화를 API로 확인하기 · 60분 수업 + 사전 준비 + 복습</p>
+<p>오늘은 각자의 노트북에서 실행하는 FastAPI를 팀장의 학습용 Supabase 프로젝트에 연결합니다. 연결이 확인되면 한 사용자를 생성하고, 읽고, 이름을 수정하고, 삭제합니다. 서버를 다시 켜도 데이터가 남는 이유와 실패했을 때 저장이 취소되는 이유까지 설명하는 것이 목표입니다.</p>
+<blockquote><p>오늘의 질문: “연결이 끝나는 시점과 작업이 확정되는 시점은 같은가?” Session은 연결의 문맥이고, transaction은 함께 확정하거나 취소할 작업의 경계입니다.</p></blockquote>
+<nav aria-label="이번 주 목차" class="lesson-toc"><strong>오늘의 순서</strong><ol>
+<li><a href="#connection">Connection · Session · Transaction</a></li>
+<li><a href="#leader">팀장 사전 준비: 공용 DB와 학생 계정</a></li>
+<li><a href="#join">전원 연결 확인</a></li>
+<li><a href="#contract">API와 입력 규칙 정하기</a></li>
+<li><a href="#implementation">완성 코드: main.py의 CRUD</a></li>
+<li><a href="#lab">생성 → 조회 → 수정 → 삭제 실습</a></li>
+<li><a href="#errors">실패 실험과 복구</a></li>
+<li><a href="#finish">완료 기준과 복습</a></li></ol></nav>
+
+<h2 id="schedule">수업 운영: 연결 성공을 먼저 확인합니다</h2>
+<table><thead><tr><th>시간</th><th>함께 할 일</th><th>확인할 결과</th></tr></thead><tbody>
+<tr><td>수업 전</td><td>팀장: 계정·DB 준비 / 팀원: 6주차 코드와 실행 환경 준비</td><td>학생 계정으로 SELECT 가능</td></tr>
+<tr><td>0–12분</td><td>Session/Transaction 비교와 코드 흐름 설명</td><td>commit과 close를 구별</td></tr>
+<tr><td>12–25분</td><td>전원 .env.local 설정, DB·API 조회</td><td>각자 current_user와 공용 seed 확인</td></tr>
+<tr><td>25–40분</td><td>입력 검증과 POST, 생성 결과 재조회</td><td>201과 실제 생성된 id</td></tr>
+<tr><td>40–50분</td><td>PATCH로 이름 변경</td><td>email은 유지</td></tr>
+<tr><td>50–57분</td><td>DELETE와 실패 사례</td><td>204 → 재조회 404, 중복 409</td></tr>
+<tr><td>57–60분</td><td>결과 확인과 설명</td><td>commit·rollback·close를 자기 말로 설명</td></tr>
+</tbody></table>
+<p>60분 안에 전부 처음부터 타이핑하는 일정은 아닙니다. 아래 완성 코드를 준비해 두고 POST는 함께 읽으며 구현하고, PATCH/DELETE는 같은 구조를 적용합니다. 25분까지 연결이 안 된 팀원이 있으면 연결 진단을 먼저 마치고 DELETE와 확장 과제는 복습으로 넘깁니다.</p>
+
+<h2 id="connection">1. Connection · Session · Transaction</h2>
+<h3>1-1. 연결 두 개를 구별하기</h3>
+<p>각자의 FastAPI는 Supabase의 <strong>Pooler</strong>에 접속합니다. Pooler는 실제 PostgreSQL 연결을 관리하는 중간 서버입니다. “내 프로그램과 Pooler의 연결”과 “Pooler가 배정하는 PostgreSQL 연결”은 서로 다른 구간입니다.</p>
+<table><thead><tr><th>구간</th><th>누가 여는가</th><th>역할</th></tr></thead><tbody>
+<tr><td>팀원 FastAPI ↔ Pooler</td><td>psycopg.connect()</td><td>클라이언트 요청 전달</td></tr>
+<tr><td>Pooler ↔ PostgreSQL</td><td>Pooler</td><td>실제 SQL 실행을 위한 DB 연결 배정</td></tr>
+</tbody></table>
+<p><strong>DB session</strong>은 연결에 딸린 상태와 문맥입니다. 사용자 로그인 session이나 브라우저 cookie와는 다른 개념입니다. <strong>Transaction</strong>은 하나의 성공/실패 단위입니다. COMMIT은 확정, ROLLBACK은 취소이며, 둘 다 연결 종료와 같은 말이 아닙니다.</p>
+<h3>1-2. Pooler가 실제 DB 연결을 언제 돌려받는가</h3>
+<table><thead><tr><th>시점</th><th>Session mode · 5432</th><th>Transaction mode · 6543</th></tr></thead><tbody>
+<tr><td>첫 transaction</td><td>연결 A에서 실행</td><td>배정받은 연결 A에서 실행</td></tr>
+<tr><td>COMMIT 후 대기</td><td>클라이언트 연결이 살아 있으면 A 유지</td><td>A를 반환해 다른 클라이언트가 사용 가능</td></tr>
+<tr><td>다음 transaction</td><td>같은 A에서 실행</td><td>A 또는 다른 B에서 실행</td></tr>
+<tr><td>연결 종료</td><td>A 반환</td><td>클라이언트 연결 종료</td></tr>
+</tbody></table>
+<p>Transaction mode라고 SQL 한 문장만 실행할 수 있는 것은 아닙니다. 하나의 transaction 안에서 여러 SQL을 실행할 수 있습니다. 다만 transaction 사이에 같은 DB session이 유지된다고 가정할 수 없습니다. Session mode는 이런 제약이 적어 이번 기초 실습의 기본으로 선택합니다. 포트 숫자는 여기의 Supabase shared pooler 기준이지 모든 DB 서비스의 공통 규칙은 아닙니다.</p>
+<p>Transaction mode로 전환할 때는 session에 의존하는 기능을 점검하고 Psycopg의 자동 prepared statement를 <code>prepare_threshold=None</code>으로 끕니다. 이는 반복 SQL의 session 내 준비 기능을 끄는 것이며, <code>%s</code> parameter binding은 그대로 사용합니다.</p>
+<h3>1-3. 오늘 코드의 실제 수명</h3>
+<pre><code class="language-python">with get_connection() as conn:
+    row = conn.execute(
+        &quot;SELECT id, name, email FROM public.users WHERE id = %s&quot;,
+        (user_id,),
+    ).fetchone()
+# 정상 종료: COMMIT + CLOSE
+# 예외 종료: ROLLBACK + CLOSE</code></pre>
+<ol><li><code>get_connection()</code>: 연결을 엽니다.</li><li>첫 SQL: Psycopg 기본 설정에서 transaction이 시작됩니다. SELECT도 해당합니다.</li><li>블록 정상 종료: commit 후 연결을 닫습니다.</li><li>블록에서 예외 발생: rollback 후 연결을 닫고 예외를 밖으로 전달합니다.</li></ol>
+<p>Session mode여도 이 코드는 서버가 켜져 있는 내내 연결을 유지하지 않습니다. 요청마다 연결을 열고 닫습니다. 따라서 현재처럼 transaction 하나만 실행하는 짧은 요청에서는 두 모드의 점유 시간 차이가 작습니다. Python 쪽 connection pool을 추가하는 것은 이후 최적화 주제입니다.</p>
+<details><summary>이해 확인: commit하면 연결도 닫히나요?</summary><p>아니요. <code>conn.commit()</code> 자체는 연결을 닫지 않습니다. 이번 코드에서는 connection context manager가 블록을 종료하면서 commit과 close를 모두 수행하기 때문에 함께 일어납니다.</p></details>
+
+<h2 id="leader">2. 팀장 사전 준비: 같은 Supabase에 접속하기</h2>
+<p><strong>이 절은 팀장이 수업 전에 완료합니다.</strong> 실제 서비스 데이터가 없는 학습 전용 프로젝트를 사용합니다. 학생들은 Supabase Dashboard 계정을 공유하거나 새 프로젝트를 만들 필요가 없습니다. 각자 FastAPI를 실행하고 팀장이 전달한 DB 계정으로 같은 프로젝트에 접속합니다.</p>
+<p>팀장은 6주차 schema의 <code>public.users(id, name, email, password_hash)</code>와 dummy data를 준비합니다. <code>email</code>에는 UNIQUE, <code>id</code>에는 identity가 있어야 합니다. 이미 준비된 DB에서 CREATE TABLE이나 seed를 반복할 필요는 없습니다.</p>
+<h3>2-1. 학생 계정에 실습 권한 주기</h3>
+<p>관리자 <code>postgres</code> 비밀번호는 팀장만 사용합니다. 아래 SQL은 학생 5명용 <code>study01</code>~<code>study05</code> 계정과 권한을 묶는 <code>study_members</code> role을 만듭니다. 계정은 비밀번호를 설정하기 전까지 password 인증으로 로그인할 수 없습니다. 기존 계정의 비밀번호나 추가 권한은 변경하지 않으므로 이 이름들은 이번 실습 전용으로 사용하세요.</p>
+<details><summary>팀장용 SQL — SQL Editor에서 실행</summary><pre><code class="language-sql">-- Leader only, in a dedicated study project. Requires public.users from Week 06.
+-- Does not create or reset users. No passwords are embedded in this script.
+BEGIN;
+DO $roles$
+DECLARE role_name text;
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = &#x27;study_members&#x27;) THEN
+        CREATE ROLE study_members NOLOGIN;
+    END IF;
+    FOREACH role_name IN ARRAY ARRAY[&#x27;study01&#x27;,&#x27;study02&#x27;,&#x27;study03&#x27;,&#x27;study04&#x27;,&#x27;study05&#x27;]
+    LOOP
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = role_name) THEN
+            EXECUTE format(
+                &#x27;CREATE ROLE %I LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS&#x27;,
+                role_name
+            );
+        END IF;
+        EXECUTE format(&#x27;GRANT study_members TO %I&#x27;, role_name);
+    END LOOP;
+END
+$roles$;
+
+GRANT CONNECT ON DATABASE postgres TO study_members;
+GRANT USAGE ON SCHEMA public TO study_members;
+GRANT SELECT (id, name, email) ON public.users TO study_members;
+GRANT INSERT (name, email, password_hash) ON public.users TO study_members;
+GRANT UPDATE (name) ON public.users TO study_members;
+GRANT DELETE ON public.users TO study_members;
+GRANT USAGE ON SEQUENCE public.users_id_seq TO study_members;
+
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS study_members_crud ON public.users;
+CREATE POLICY study_members_crud ON public.users
+    FOR ALL TO study_members USING (true) WITH CHECK (true);
+COMMIT;
+
+-- Next, assign a different password to each new LOGIN role with psql \password.
+-- The policy allows all study rows; it is not per-user ownership enforcement.</code></pre></details>
+<p><strong>GRANT</strong>는 어떤 작업/column을 사용할지, <strong>RLS policy</strong>는 어떤 row에 접근할지를 결정합니다. 학생들은 id·name·email을 읽고, 사용자를 생성하고, name을 수정하고, 삭제할 수 있습니다. password_hash 조회 권한은 주지 않습니다. 따라서 학생 계정의 <code>SELECT * FROM users</code>는 실패하는 것이 정상입니다.</p>
+<p>이 policy는 실습 테이블 전체 row를 허용합니다. <strong>학생별 소유권을 강제하는 인증 설계는 아닙니다.</strong> 각자 자기 email과 id만 수정·삭제하기로 약속합니다. 이후 인증 수업에서 소유권 검증을 다룹니다. 기존 anon/authenticated 접근 설정은 이 SQL에서 넓히지 않습니다.</p>
+<h3>2-2. 비밀번호는 명령 입력 기록에 남기지 않기</h3>
+<p>팀장의 터미널에서 psql로 접속합니다. HOST와 PROJECT_REF는 실제 Connect 창의 값으로 바꿉니다. <code>-W</code>가 팀장의 DB 비밀번호를 물으며 입력 내용은 화면에 표시되지 않습니다. psql이 없다면 6주차 PostgreSQL 설치 안내의 client를 사용합니다.</p>
+<pre><code class="language-shell">PGSSLMODE=require psql -h YOUR_POOLER_HOST -p 5432 \
+  -U postgres.YOUR_PROJECT_REF -d postgres -W</code></pre>
+<p>접속 후 다음 명령을 한 줄씩 실행합니다. 각 계정에 서로 다른 비밀번호를 정하고 해당 팀원에게 개인적으로 전달합니다. 아래는 SQL이 아니라 <strong>psql 전용 명령</strong>입니다. Dashboard SQL Editor에 넣지 않습니다.</p>
+<pre><code class="language-shell">\password study01
+\password study02
+\password study03
+\password study04
+\password study05
+\q</code></pre>
+<p>팀장은 직접 study01로 연결해 조회 한 번을 확인한 다음 나머지 팀원에게 배포합니다. 수업 후에도 사용할 계정은 유지하고, 더 이상 참여하지 않는 계정은 팀장이 접근을 회수합니다.</p>
+<h3>2-3. 배포할 정보와 공용 실습 규칙</h3>
+<table><thead><tr><th>공통 정보</th><th>학생마다 다른 정보</th></tr></thead><tbody><tr><td>Session pooler Host, port 5432, database postgres</td><td>DB username과 password, 실습 email 접두어</td></tr></tbody></table>
+<p>예: study01은 <code>study01.w07.001@example.com</code>, study02는 <code>study02.w07.001@example.com</code>을 사용합니다. 두 번째 실습 때는 002로 바꿉니다. DB 계정 이름과 users 테이블의 사용자 데이터는 다른 개념입니다. 같은 DB에 연결되어 있으므로 다른 사람이 commit한 데이터도 이후 조회에서 보일 수 있습니다. row 개수나 id가 나만의 실습 순서대로 늘어난다고 가정하지 않습니다.</p>
+
+<h2 id="join">3. 전원 연결 확인: 여기까지 함께 통과합니다</h2>
+<h3>3-1. 6주차 코드와 환경 확인</h3>
+<p>팀장이 공유한 6주차 완료 코드가 있어야 합니다. 아래 명령은 <code>pyproject.toml</code>이 있는 프로젝트 루트에서 실행합니다. 개인 수정이 있다면 먼저 보존하고, 수업 시작 직전에 무작정 reset하지 않습니다.</p>
+<pre><code class="language-shell">uv sync
+uv add email-validator</code></pre>
+<p><code>EmailStr</code> 검증에 사용할 의존성을 명시적으로 추가합니다. <code>uv add</code>는 pyproject.toml과 uv.lock을 갱신합니다. 이미 팀장이 반영한 최신 lockfile을 받았다면 <code>uv sync</code>로 충분합니다.</p>
+<h3>3-2. 바뀐 Connect 화면에서 값 찾기</h3>
+<p>팀장: 프로젝트 상단 <strong>Connect → Direct / Connection string → Session pooler → View parameters</strong>를 확인합니다. 화면 배치가 다르면 Session pooler 연결 문자열의 host·port·database를 확인합니다. UI의 Direct 탭과 연결 방식의 Direct connection은 같은 선택이 아닙니다. 이번 방식은 Session pooler입니다.</p>
+<p>학생: 받은 값으로 프로젝트 루트에 <strong>.env.local</strong>을 만듭니다. 파일명 맨 앞의 점을 포함합니다. <code>.env.example</code>은 예시일 뿐이며 프로그램은 <code>.env.local</code>을 읽습니다.</p>
+<pre><code class="language-dotenv">PGHOST=&quot;YOUR_SESSION_POOLER_HOST&quot;
+PGPORT=5432
+PGDATABASE=postgres
+PGUSER=&quot;study01.YOUR_PROJECT_REF&quot;
+PGPASSWORD=&quot;YOUR_STUDENT_ROLE_PASSWORD&quot;</code></pre>
+<p>shared pooler에서 custom DB role의 user는 <code>study01.PROJECT_REF</code> 형식입니다. 학생에게 보이는 postgres용 문자열을 그대로 쓰지 않습니다. 비밀번호는 자기 study01 계정의 비밀번호이며 Supabase 로그인 비밀번호나 API key가 아닙니다. 별도 PG 변수에 넣으므로 비밀번호를 URL 인코딩하지 않습니다. 공백·# 등이 포함되면 따옴표로 감쌉니다.</p>
+<p>.gitignore에는 <code>.env</code>, <code>.env.*</code>와 예외 <code>!.env.example</code>이 있어야 합니다. 다음 명령이 .env.local을 출력하면 Git ignore가 적용된 것입니다. 비밀번호를 화면 공유하거나 Git에 올리지 않습니다.</p>
+<pre><code class="language-shell">git check-ignore .env.local</code></pre>
+<h3>3-3. 연결 함수: 6주차 코드 그대로 사용</h3>
+<details><summary>app/database.py 전체 코드 확인</summary><pre><code class="language-python">import os
+from pathlib import Path
+
+import psycopg
+from dotenv import load_dotenv
+from psycopg.rows import dict_row
+
+load_dotenv(Path(__file__).resolve().parents[1] / &quot;.env.local&quot;)
+
+
+def get_connection():
+    required = (&quot;PGHOST&quot;, &quot;PGDATABASE&quot;, &quot;PGUSER&quot;, &quot;PGPASSWORD&quot;)
+    missing = [name for name in required if not os.getenv(name)]
+    if missing:
+        raise RuntimeError(f&quot;Set these variables in .env.local: {&#x27;, &#x27;.join(missing)}&quot;)
+    return psycopg.connect(
+        host=os.environ[&quot;PGHOST&quot;],
+        port=int(os.getenv(&quot;PGPORT&quot;, &quot;5432&quot;)),
+        dbname=os.environ[&quot;PGDATABASE&quot;],
+        user=os.environ[&quot;PGUSER&quot;],
+        password=os.environ[&quot;PGPASSWORD&quot;],
+        sslmode=&quot;require&quot;,
+        connect_timeout=5,
+        row_factory=dict_row,
+    )</code></pre></details>
+<p>기존 환경 변수가 있으면 <code>load_dotenv</code> 기본 동작상 파일보다 우선합니다. .env.local을 고쳤는데도 같은 오류가 나면 실행 중인 서버를 종료하고, 터미널에 설정된 PG 변수를 확인합니다. <code>sslmode=require</code>는 암호화를 요구합니다. 배포 수준의 인증서 검증에는 CA 설정과 verify-full이 필요하며 이번 로컬 수업에서는 설정을 단순하게 유지합니다.</p>
+<h3>3-4. API보다 먼저 DB 한 번 읽기</h3>
+<p>프로젝트 루트에 <code>check_db.py</code>를 만들고 아래 코드를 넣습니다. 비밀번호를 출력하지 않고 어떤 role·database에 연결했는지 확인합니다.</p>
+<pre><code class="language-python">from app.database import get_connection
+
+with get_connection() as conn:
+    print(conn.execute(
+        &quot;SELECT current_user, current_database()&quot;
+    ).fetchone())
+    print(conn.execute(
+        &quot;SELECT id, name, email FROM public.users ORDER BY id LIMIT 2&quot;
+    ).fetchall())</code></pre>
+<pre><code class="language-shell">uv run python check_db.py</code></pre>
+<p>예상 결과: current_user는 자신의 study01 계정, current_database는 postgres입니다. 두 번째 출력에는 팀장이 준비한 사용자가 나옵니다. 팀장은 다음 표를 화면에 띄우고 각자가 자기 결과를 말하게 합니다. 계정 연결과 API 조회가 모두 통과하기 전에는 CRUD로 넘어가지 않습니다.</p>
+<table><thead><tr><th>담당</th><th>DB 연결</th><th>GET /users</th><th>실습 email</th></tr></thead><tbody>
+<tr><td>study01</td><td>□</td><td>□</td><td>study01.w07.001@example.com</td></tr>
+<tr><td>study02</td><td>□</td><td>□</td><td>study02.w07.001@example.com</td></tr>
+<tr><td>study03</td><td>□</td><td>□</td><td>study03.w07.001@example.com</td></tr>
+<tr><td>study04</td><td>□</td><td>□</td><td>study04.w07.001@example.com</td></tr>
+<tr><td>study05</td><td>□</td><td>□</td><td>study05.w07.001@example.com</td></tr>
+</tbody></table>
+<pre><code class="language-shell">uv run fastapi dev app/main.py</code></pre>
+<p><a href="http://127.0.0.1:8000/docs">Swagger UI</a>에서 GET /users → Try it out → limit 2 → Execute를 누릅니다. 200과 items가 나오면 API 연결까지 성공입니다. /health는 서버가 켜졌는지만 확인하므로 DB 연결 성공의 증거가 아닙니다. 여러 학생이 각자 localhost:8000을 사용하는 것은 충돌하지 않습니다. localhost는 각자의 컴퓨터입니다.</p>
+
+<h2 id="contract">4. API 계약과 Validation</h2>
+<table><thead><tr><th>Endpoint</th><th>입력</th><th>성공</th><th>실패</th></tr></thead><tbody>
+<tr><td>GET /users</td><td>limit 1~100, 기본 20</td><td>200, items 배열</td><td>422</td></tr>
+<tr><td>GET /users/{id}</td><td>정수 id</td><td>200, 사용자</td><td>404 / 422</td></tr>
+<tr><td>POST /users</td><td>name, email 필수</td><td>201, 생성된 사용자</td><td>422 / 중복 409</td></tr>
+<tr><td>PATCH /users/{id}</td><td>name 필수</td><td>200, 수정된 사용자</td><td>404 / 422</td></tr>
+<tr><td>DELETE /users/{id}</td><td>정수 id</td><td>204, body 없음</td><td>404 / 422</td></tr>
+</tbody></table>
+<p>이번 PATCH의 계약은 <strong>이름 변경만 허용</strong>입니다. 사용자 전체 중 name만 바꾸므로 partial update이며, body에서 name 자체를 생략할 수 있다는 뜻은 아닙니다. 빈 객체 {}, null, email 변경 요청은 모두 422로 거부합니다. 여러 optional 필드를 받는 일반 PATCH는 확장 과제로 남깁니다.</p>
+<ul><li>name: 앞뒤 공백 제거 후 1~50자. 공백만 있으면 거부.</li><li>email: EmailStr로 형식 검증 후 전체 소문자 저장. 소문자 정책은 이번 수업에서 정한 계약이며 모든 서비스의 보편 규칙은 아닙니다.</li><li>예상하지 않은 입력 필드는 거부합니다. 클라이언트가 id나 password_hash를 지정하지 않습니다.</li><li>출력에는 id, name, email만 포함합니다.</li></ul>
+<p>API 검증은 사용자에게 빠른 피드백을 주고 DB 제약은 최종 데이터 무결성을 지킵니다. email을 SELECT로 먼저 확인하는 것만으로 동시 요청의 중복을 막을 수는 없습니다. 두 요청이 동시에 “없음”을 확인할 수 있으므로 DB UNIQUE 제약을 유지하고 INSERT 실패를 처리합니다.</p>
+
+<h2 id="implementation">5. main.py에서 CRUD 완성하기</h2>
+<p>CRUD는 데이터 생성(Create), 조회(Read), 수정(Update), 삭제(Delete)를 뜻합니다. 7주차에는 입력·출력 정의, HTTP 처리, SQL을 모두 app/main.py에 작성합니다. database.py의 연결 함수는 유지합니다. 8주차에 같은 코드를 역할별 파일로 옮깁니다.</p>
+<p>먼저 기존 GET 두 개를 확인합니다. 그다음 UserCreate와 POST를 추가합니다. POST로 받은 id로 GET을 실행합니다. 다음으로 UserNamePatch와 PATCH를 추가합니다. 마지막에 DELETE를 추가합니다. 아래 코드는 단계별로 비교할 완성본입니다.</p>
+<details><summary>app/main.py 전체 완성 코드</summary><pre><code class="language-python">from typing import Annotated
+
+from fastapi import FastAPI, HTTPException, Query, Response
+from psycopg.errors import UniqueViolation
+from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints, field_validator
+
+from app.database import get_connection
+
+UserName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
+
+
+class UserCreate(BaseModel):
+    model_config = ConfigDict(extra=&quot;forbid&quot;)
+    name: UserName
+    email: EmailStr
+
+    @field_validator(&quot;email&quot;)
+    @classmethod
+    def normalize_email(cls, value: str) -&gt; str:
+        return value.lower()
+
+
+class UserNamePatch(BaseModel):
+    model_config = ConfigDict(extra=&quot;forbid&quot;)
+    name: UserName
+
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+
+
+class UserListResponse(BaseModel):
+    items: list[UserResponse]
+
+
+app = FastAPI(title=&quot;LikeLion Backend Study&quot;)
+
+
+@app.get(&quot;/&quot;, tags=[&quot;root&quot;])
+def read_root() -&gt; dict[str, str]:
+    return {&quot;message&quot;: &quot;Hello World&quot;}
+
+
+@app.get(&quot;/health&quot;, tags=[&quot;health&quot;])
+async def health() -&gt; dict[str, str]:
+    return {&quot;status&quot;: &quot;ok&quot;, &quot;project_name&quot;: &quot;2026 Fall Backend&quot;}
+
+
+@app.get(&quot;/users&quot;, tags=[&quot;users&quot;], response_model=UserListResponse)
+def list_users(limit: int = Query(default=20, ge=1, le=100)):
+    with get_connection() as conn:
+        users = conn.execute(
+            &quot;SELECT id, name, email FROM public.users ORDER BY id LIMIT %s&quot;, (limit,)
+        ).fetchall()
+    return {&quot;items&quot;: users}
+
+
+@app.get(&quot;/users/{user_id}&quot;, tags=[&quot;users&quot;], response_model=UserResponse)
+def read_user(user_id: int):
+    with get_connection() as conn:
+        user = conn.execute(
+            &quot;SELECT id, name, email FROM public.users WHERE id = %s&quot;, (user_id,)
+        ).fetchone()
+    if user is None:
+        raise HTTPException(status_code=404, detail=&quot;User not found&quot;)
+    return user
+
+
+@app.post(&quot;/users&quot;, tags=[&quot;users&quot;], status_code=201, response_model=UserResponse)
+def create_user(body: UserCreate):
+    try:
+        with get_connection() as conn:
+            user = conn.execute(
+                &quot;&quot;&quot;INSERT INTO public.users (name, email, password_hash)
+                   VALUES (%s, %s, %s) RETURNING id, name, email&quot;&quot;&quot;,
+                (body.name, str(body.email), &quot;!dummy-no-login&quot;),
+            ).fetchone()
+        return user
+    except UniqueViolation as exc:
+        if exc.diag.constraint_name != &quot;users_email_key&quot;:
+            raise
+        raise HTTPException(status_code=409, detail=&quot;Email already exists&quot;) from exc
+
+
+@app.patch(&quot;/users/{user_id}&quot;, tags=[&quot;users&quot;], response_model=UserResponse)
+def update_user(user_id: int, body: UserNamePatch):
+    with get_connection() as conn:
+        user = conn.execute(
+            &quot;&quot;&quot;UPDATE public.users SET name = %s WHERE id = %s
+               RETURNING id, name, email&quot;&quot;&quot;,
+            (body.name, user_id),
+        ).fetchone()
+    if user is None:
+        raise HTTPException(status_code=404, detail=&quot;User not found&quot;)
+    return user
+
+
+@app.delete(&quot;/users/{user_id}&quot;, tags=[&quot;users&quot;], status_code=204, response_class=Response)
+def delete_user(user_id: int):
+    with get_connection() as conn:
+        deleted = conn.execute(
+            &quot;DELETE FROM public.users WHERE id = %s RETURNING id&quot;, (user_id,)
+        ).fetchone()
+    if deleted is None:
+        raise HTTPException(status_code=404, detail=&quot;User not found&quot;)
+    return Response(status_code=204)
+</code></pre></details>
+<h3>입력·출력 정의 읽기</h3>
+<p>Model은 여기서 데이터의 필드와 검증 규칙을 정의하는 Python class입니다. DB table을 만드는 코드가 아닙니다. UserCreate는 POST 입력, UserNamePatch는 PATCH 입력, UserResponse는 응답에 포함할 필드를 정의합니다.</p>
+<p>Annotated는 기본 타입에 추가 규칙을 붙입니다. UserName의 기본 타입은 문자열 str입니다. StringConstraints는 앞뒤 공백을 제거하고 길이를 1~50자로 제한합니다. 예를 들어 " Ada "는 "Ada"가 되고 "   "는 검증에 실패합니다.</p>
+<p>EmailStr는 email 형식을 검사합니다. field_validator는 해당 필드를 추가로 처리하는 함수를 지정합니다. normalize_email은 검증된 email을 소문자로 바꿉니다. ConfigDict(extra="forbid")는 정의하지 않은 입력 필드를 거부합니다.</p>
+<h3>POST 한 번 추적하기</h3>
+<ol><li>FastAPI가 요청 body를 UserCreate로 검사합니다. 잘못된 입력은 422가 됩니다.</li><li>get_connection()으로 DB 연결을 엽니다.</li><li>INSERT의 %s와 별도의 값 tuple을 전달합니다. 사용자 입력을 SQL 문자열에 직접 붙이지 않습니다.</li><li>RETURNING으로 실제 생성된 id, name, email을 받습니다.</li><li>with 블록이 정상 종료되면 변경을 확정하고 연결을 닫습니다.</li><li>UserResponse에 정의된 필드만 201 응답으로 보냅니다.</li></ol>
+<p>email 중복으로 users_email_key constraint를 위반하면 with 블록이 변경을 취소합니다. 그 후 except가 해당 오류를 409로 바꿉니다. 다른 DB 오류는 409로 숨기지 않습니다.</p>
+<p>password_hash에는 실습용 !dummy-no-login을 저장합니다. 실제 로그인 비밀번호의 hash가 아니므로 이 코드는 회원가입 기능이 아닙니다. PATCH는 name만 변경합니다. DELETE 성공은 204이며 응답 body가 없습니다.</p>
+<p>동기 Psycopg를 사용하는 endpoint는 def로 작성합니다. FastAPI는 이 함수를 thread pool에서 실행합니다. async def 안에 동기 DB 호출을 직접 넣지 않습니다.</p>
+<details><summary>확인: main.py가 길어졌다는 이유만으로 오늘 파일을 나누나요?</summary><p>아니요. 오늘은 CRUD의 동작을 먼저 확인합니다. 8주차에는 각 코드의 역할과 변경 이유를 구별한 다음 파일을 나눕니다.</p></details>
+
+<h2 id="lab">6. 한 사용자로 끝까지 따라가기</h2>
+<p>명령 대신 Swagger UI로 먼저 실습해도 됩니다. 각 endpoint의 Try it out을 누른 뒤 같은 body를 입력합니다. 아래 curl은 macOS/Linux 터미널 기준입니다. PowerShell에서는 Swagger UI를 쓰면 따옴표 차이를 피할 수 있습니다.</p>
+<h3>6-1. POST: 생성된 id 기록</h3>
+<pre><code class="language-shell">curl -i -X POST http://127.0.0.1:8000/users \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -d &#x27;{&quot;name&quot;:&quot;Study 01&quot;,&quot;email&quot;:&quot;study01.w07.001@example.com&quot;}&#x27;</code></pre>
+<p>study01은 자기 계정 이름으로, 다른 팀원은 study02 등으로 email을 바꿉니다. 예상 HTTP status는 201입니다. 응답의 id를 기록합니다. 이 시점에는 이미 commit되어 다음 요청에서 읽을 수 있어야 합니다.</p>
+<pre><code class="language-json">{&quot;id&quot;:31,&quot;name&quot;:&quot;Study 01&quot;,&quot;email&quot;:&quot;study01.w07.001@example.com&quot;}</code></pre>
+<p>위 31은 예시입니다. 실제 응답 id를 아래의 YOUR_ID 자리에 넣으세요.</p>
+<h3>6-2. GET: 저장됐는지 확인</h3>
+<pre><code class="language-shell">curl -i http://127.0.0.1:8000/users/YOUR_ID</code></pre>
+<p>200과 생성 당시 이름·email이 나와야 합니다. 기본 GET /users는 처음 20개만 반환하므로 새 사용자가 목록에 안 보일 수 있습니다. 생성된 id로 직접 조회하세요. 팀장은 학생이 알려 준 id를 자신의 API나 SQL Editor에서 조회해 같은 DB를 사용한다는 것도 보여 줄 수 있습니다.</p>
+<h3>6-3. PATCH: 이름만 변경</h3>
+<pre><code class="language-shell">curl -i -X PATCH http://127.0.0.1:8000/users/YOUR_ID \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -d &#x27;{&quot;name&quot;:&quot;Study 01 Updated&quot;}&#x27;</code></pre>
+<p>200 응답에서 name이 바뀌고 email은 유지되어야 합니다. 한 번 더 GET해서 DB 값도 변경됐는지 확인합니다. 여기서 서버를 Ctrl+C로 종료했다 다시 켜고 GET하면 수정한 데이터가 그대로 남아야 합니다.</p>
+<h3>6-4. DELETE: body 없는 성공</h3>
+<pre><code class="language-shell">curl -i -X DELETE http://127.0.0.1:8000/users/YOUR_ID</code></pre>
+<p>204이며 body가 없어야 합니다. 같은 id를 GET하면 404입니다. DELETE를 한 번 더 보내도 이번 API 계약에서는 404를 반환합니다. 응답 status가 달라도 “row가 없는 상태”는 같으므로 DELETE의 idempotent한 결과와 모순되지 않습니다.</p>
+
+<h2 id="errors">7. 실패를 일부러 만들고 복구하기</h2>
+<table><thead><tr><th>실험</th><th>예상</th><th>확인할 내용</th></tr></thead><tbody>
+<tr><td>POST name을 공백만 입력</td><td>422</td><td>trim 후 빈 이름이 거부됨</td></tr>
+<tr><td>POST email을 not-an-email로 입력</td><td>422</td><td>DB INSERT 전에 검증 실패</td></tr>
+<tr><td>같은 email로 두 번 POST</td><td>첫 201, 다음 409</td><td>다음에는 다른 email로 생성이 가능한지 확인</td></tr>
+<tr><td>PATCH body가 {} 또는 {"name": null}</td><td>422</td><td>필수 name이 없거나 잘못된 타입</td></tr>
+<tr><td>PATCH에 email도 추가</td><td>422</td><td>이번 API는 이름 변경만 허용</td></tr>
+<tr><td>삭제한 id를 PATCH/GET</td><td>404</td><td>없는 사용자와 DB 장애를 구별</td></tr>
+<tr><td>/users/abc 또는 limit=101</td><td>422</td><td>path/query 검증</td></tr>
+</tbody></table>
+<details><summary>팀장 시연: rollback하면 row가 남을까?</summary>
+<p>학생 계정으로 실행할 별도 Python 코드입니다. email의 study01 부분은 자기 계정으로 바꿉니다. 기존 row와 충돌하지 않도록 고유 email을 생성합니다. 일부러 예외를 발생시키고 새 연결에서 확인합니다.</p><pre><code class="language-python">from uuid import uuid4
+from app.database import get_connection
+
+email = f&quot;study01.rollback.{uuid4().hex}@example.com&quot;
+try:
+    with get_connection() as conn:
+        conn.execute(
+            &quot;INSERT INTO public.users (name, email, password_hash) VALUES (%s, %s, %s)&quot;,
+            (&quot;Rollback demo&quot;, email, &quot;!dummy-no-login&quot;),
+        )
+        raise RuntimeError(&quot;이번 작업을 취소합니다&quot;)
+except RuntimeError:
+    pass
+
+with get_connection() as conn:
+    print(conn.execute(
+        &quot;SELECT id FROM public.users WHERE email = %s&quot;, (email,)
+    ).fetchone())  # None</code></pre>
+<p>결과는 None이어야 합니다. INSERT에서 id가 배정됐더라도 rollback 뒤 그 id 번호가 다시 쓰인다고 보장되지 않습니다. identity sequence에 빈 번호가 생기는 것은 정상입니다.</p></details>
+<h3>연결 오류는 이 순서로 확인</h3>
+<table><thead><tr><th>증상</th><th>확인할 곳</th></tr></thead><tbody>
+<tr><td>Set these variables…</td><td>.env.local의 위치·파일명과 필수 PG 변수. 프로젝트 루트인지 확인</td></tr>
+<tr><td>could not translate host name</td><td>PGHOST에 https://나 포트가 붙었는지, 복사 실수와 DNS 확인</td></tr>
+<tr><td>Tenant or user not found</td><td>Session pooler host와 study01.PROJECT_REF 전체 username, role 생성 여부</td></tr>
+<tr><td>Password authentication failed</td><td>해당 학생 role의 비밀번호인지 확인. 프로젝트 관리자 비밀번호와 구별</td></tr>
+<tr><td>permission denied / RLS violation</td><td>팀장 GRANT·role membership·RLS policy 확인. RLS를 끄는 방식으로 우회하지 않음</td></tr>
+<tr><td>SELECT *만 실패</td><td>학생 계정은 password_hash SELECT 권한이 없음. id, name, email을 명시</td></tr>
+<tr><td>relation users does not exist</td><td>프로젝트·database가 맞는지, 팀장의 public.users 준비 여부</td></tr>
+<tr><td>Timeout</td><td>프로젝트 활성 상태, 네트워크, host/port, connection limit 확인</td></tr>
+<tr><td>GET은 되고 POST만 500</td><td>서버 traceback에서 INSERT 권한·sequence 권한·NOT NULL 위반 확인</td></tr>
+<tr><td>수정한 env가 반영되지 않음</td><td>서버 재시작. 기존 터미널 환경 변수가 파일을 덮어쓰는지 확인</td></tr>
+</tbody></table>
+
+<h2 id="finish">8. 완료 기준과 복습</h2>
+<ul><li>□ 모든 팀원이 자기 DB role로 공용 프로젝트에 연결했다.</li><li>□ 자신의 email로 생성하고 실제 응답 id를 기록했다.</li><li>□ 이름만 수정했을 때 email이 유지된다.</li><li>□ 서버 재시작 후에도 변경된 데이터가 조회된다.</li><li>□ 중복 email은 409, 잘못된 입력은 422, 없는 사용자는 404다.</li><li>□ 삭제 성공은 204이며 재조회는 404다.</li><li>□ .env.local은 Git에 포함되지 않는다.</li><li>□ commit과 close의 차이를 설명할 수 있다.</li></ul>
+<p>팀원별 제출: 생성·수정·삭제의 status와 response, 중복 email 오류 결과, “Session mode에서 commit해도 연결이 바로 끝나지 않는 이유” 한 문장. 인증 정보가 담긴 화면은 제출하지 않습니다.</p>
+<details><summary>복습 질문과 답</summary><ol>
+<li>POST에서 id를 보내지 않는 이유? → DB identity가 생성하고 RETURNING으로 실제 값을 받기 때문.</li>
+<li>왜 SELECT 중복 확인만으로 충분하지 않나? → 동시에 들어온 요청 사이에 경쟁이 생길 수 있으므로 UNIQUE가 최종 보장.</li>
+<li>왜 connection을 닫아야 하나? → 사용이 끝난 연결 자원을 반환하기 위해. 특히 Session mode는 연결이 열려 있는 동안 DB 연결을 점유할 수 있음.</li>
+<li>한 학생이 수정한 값이 다른 학생에게도 보이는 이유? → 같은 프로젝트·database·table을 사용하고 변경을 commit했기 때문.</li>
+<li>이 서비스에 로그인해도 되나? → 아직 인증 기능이 없고 dummy placeholder만 사용하므로 로그인 수업 전 단계.</li>
+</ol></details>
+<h3>다음 주로 넘길 내용</h3><p>8주차에는 동작하는 main.py를 Model · Repository · Router로 분리합니다. API 응답을 유지하면서 각 layer의 역할을 설명합니다. 일반적인 PATCH의 생략/null 구별, 학생별 row 소유권, application-side connection pool은 이후 확장 주제입니다. 이번 시간에는 “올바른 입력을 실제 DB에 확정하고 그 결과에 맞는 HTTP 응답을 보낸다”에 집중합니다.</p>
+<h3>공식 참고 자료</h3><ul>
+<li><a href="https://supabase.com/docs/guides/database/connecting-to-postgres">Supabase: 연결 방식과 custom role username</a></li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/roles">Supabase: PostgreSQL roles</a></li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase: RLS</a></li>
+<li><a href="https://www.psycopg.org/psycopg3/docs/basic/transactions.html">Psycopg: transaction과 connection context</a></li>
+<li><a href="https://www.psycopg.org/psycopg3/docs/advanced/prepare.html">Psycopg: prepared statements</a></li>
+<li><a href="https://docs.pydantic.dev/latest/concepts/validators/">Pydantic: validation</a></li>
+<li><a href="https://fastapi.tiangolo.com/tutorial/body/">FastAPI: request body</a></li>
+</ul>
+</article>
+      <nav class="pager" aria-label="이전 및 다음 문서"><a class="pager-link previous" href="week-06.html"><span>이전</span><strong>Week 06 · Local DB &amp; API 조회</strong></a><a class="pager-link next" href="week-08.html"><span>다음</span><strong>Week 08 · Backend Layers</strong></a></nav>
+      <footer class="document-footer">
+        <span>2026 Fall Backend Study</span>
+        <a href="index.html">전체 커리큘럼으로</a>
+      </footer>
+    </div>
+  </main>
+  <script>
+(() => {
+  const root = document.documentElement;
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem("backend-study-theme");
+  } catch {
+    // Some browsers restrict storage for files opened directly from disk.
+  }
+  const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = savedTheme || (preferredDark ? "dark" : "light");
+
+  document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem("backend-study-theme", next);
+    } catch {
+      // The current page still changes theme even when storage is unavailable.
+    }
+  });
+
+  const sidebar = document.querySelector(".sidebar");
+  const menuToggle = document.querySelector(".menu-toggle");
+  menuToggle?.addEventListener("click", () => {
+    const isOpen = sidebar?.classList.toggle("open") ?? false;
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (window.innerWidth > 900 || !sidebar?.classList.contains("open")) return;
+    if (sidebar.contains(event.target) || menuToggle?.contains(event.target)) return;
+    sidebar.classList.remove("open");
+    menuToggle?.setAttribute("aria-expanded", "false");
+  });
+
+  document.querySelectorAll("pre").forEach((block) => {
+    const button = document.createElement("button");
+    button.className = "copy-code";
+    button.type = "button";
+    button.textContent = "COPY";
+    button.setAttribute("aria-label", "코드 복사");
+    button.addEventListener("click", async () => {
+      const code = block.querySelector("code")?.textContent ?? "";
+      let copied = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+          copied = true;
+        }
+      } catch {
+        copied = false;
+      }
+      if (!copied) {
+        const textarea = document.createElement("textarea");
+        textarea.value = code;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.append(textarea);
+        textarea.select();
+        copied = document.execCommand("copy");
+        textarea.remove();
+      }
+      button.textContent = copied ? "COPIED" : "SELECT & COPY";
+      window.setTimeout(() => (button.textContent = "COPY"), 1200);
+    });
+    block.append(button);
+  });
+
+  const progressBar = document.querySelector(".reading-progress span");
+  const updateProgress = () => {
+    const distance = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = distance > 0 ? (window.scrollY / distance) * 100 : 0;
+    if (progressBar) progressBar.style.width = `${Math.min(100, progress)}%`;
+  };
+  document.addEventListener("scroll", updateProgress, { passive: true });
+  updateProgress();
+
+  const diagrams = document.querySelectorAll(".mermaid");
+  if (diagrams.length) {
+    import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs")
+      .then(({ default: mermaid }) => {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: root.dataset.theme === "dark" ? "dark" : "neutral",
+          securityLevel: "strict",
+          fontFamily: "system-ui, sans-serif",
+        });
+        return mermaid.run({ nodes: diagrams });
+      })
+      .catch(() => {
+        diagrams.forEach((diagram) => diagram.classList.add("mermaid-unavailable"));
+      });
+  }
+})();
+
+  </script>
+</body>
+</html>

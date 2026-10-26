@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="2026 LikeLion Backend Study — Python과 FastAPI로 배우는 14주 백엔드 커리큘럼">
+  <title>Week 08 — Backend Layers: 관계형 데이터로 상태 보존하기 · LikeLion Backend Study</title>
+  <style>
+:root {
+  color-scheme: light;
+  --paper: #f4f1e8;
+  --paper-raised: #fffdf7;
+  --ink: #16211d;
+  --muted: #68736d;
+  --line: #c9cec8;
+  --accent: #ff5c35;
+  --accent-soft: #ffe1d7;
+  --forest: #123b2e;
+  --code: #11201b;
+  --code-ink: #e7f5ec;
+  --sidebar-width: 292px;
+  --content-width: 850px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #101713;
+  --paper-raised: #17201b;
+  --ink: #edf4ef;
+  --muted: #a9b5ae;
+  --line: #35423b;
+  --accent: #ff7959;
+  --accent-soft: #4a291f;
+  --forest: #b9efcf;
+  --code: #09100d;
+  --code-ink: #dff4e6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Pretendard, "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+  line-height: 1.78;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -5rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  display: flex;
+  width: var(--sidebar-width);
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.brand-block {
+  padding: 2rem 1.65rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: block;
+  text-decoration: none;
+}
+
+.brand span,
+.page-meta,
+.sidebar-footer,
+.pager-link span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.brand span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.brand strong {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+
+.brand-block p {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.week-nav {
+  display: grid;
+  padding: 0.8rem;
+  gap: 0.18rem;
+}
+
+.week-nav a {
+  display: grid;
+  grid-template-columns: 4.7rem 1fr;
+  align-items: baseline;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  text-decoration: none;
+}
+
+.week-nav a:hover {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.week-nav a.active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: var(--paper-raised);
+}
+
+[data-theme="dark"] .week-nav a.active {
+  background: #234b3b;
+  color: #f7fff9;
+}
+
+.week-nav span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+}
+
+.week-nav a.active span {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.week-nav strong {
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+
+.sidebar-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 1rem 1.55rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.theme-toggle,
+.menu-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.theme-toggle:hover,
+.menu-toggle:hover {
+  color: var(--accent);
+}
+
+main {
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+}
+
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto var(--sidebar-width);
+  z-index: 30;
+  height: 3px;
+  background: transparent;
+}
+
+.reading-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+}
+
+.article-shell {
+  width: min(calc(100% - 3rem), var(--content-width));
+  margin: 0 auto;
+  padding: 4.3rem 0 3rem;
+}
+
+.page-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3.8rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+article > h1:first-child {
+  max-width: 790px;
+  margin: 0 0 3.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-weight: 600;
+  letter-spacing: -0.064em;
+  line-height: 0.98;
+}
+
+.overview article > h1:first-child {
+  font-size: clamp(3.25rem, 7.3vw, 6.75rem);
+}
+
+article > p:nth-child(2) {
+  color: var(--muted);
+}
+
+h2 {
+  margin: 4.8rem 0 1.45rem;
+  padding-top: 1.2rem;
+  border-top: 3px solid var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+h3 {
+  margin: 3rem 0 0.8rem;
+  color: var(--forest);
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+h4 {
+  margin: 2rem 0 0.5rem;
+}
+
+.heading-anchor {
+  margin-left: 0.35rem;
+  color: var(--line);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+.heading-anchor:focus {
+  opacity: 1;
+}
+
+p,
+li {
+  font-size: 1rem;
+}
+
+strong {
+  font-weight: 750;
+}
+
+blockquote {
+  margin: 2rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 0;
+  border-left: 5px solid var(--accent);
+  background: var(--accent-soft);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+}
+
+blockquote p {
+  margin: 0;
+  font-size: inherit;
+}
+
+ul,
+ol {
+  padding-left: 1.35rem;
+}
+
+li + li {
+  margin-top: 0.35rem;
+}
+
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.45rem;
+  accent-color: var(--accent);
+  vertical-align: -0.12rem;
+}
+
+table {
+  display: table;
+  width: 100%;
+  margin: 1.75rem 0 2.5rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  padding: 0.75rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  border-bottom: 2px solid var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+code {
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+p code,
+li code,
+td code {
+  padding: 0.13em 0.35em;
+}
+
+pre {
+  position: relative;
+  margin: 1.7rem 0 2.2rem;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--code-ink) 15%, transparent);
+  border-radius: 0.45rem;
+  background: var(--code);
+  color: var(--code-ink);
+  box-shadow: 0 1.2rem 2.5rem rgb(10 22 16 / 10%);
+}
+
+pre code {
+  display: block;
+  min-width: max-content;
+  padding: 1.35rem 1.45rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.copy-code {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 0.25rem;
+  background: rgb(0 0 0 / 28%);
+  color: #dce9e1;
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+}
+
+.mermaid {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 2rem 0 2.5rem;
+  overflow-x: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  background: var(--paper-raised);
+  text-align: center;
+}
+
+.pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 6rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.pager-link {
+  display: flex;
+  min-height: 7.5rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.2rem;
+  text-decoration: none;
+}
+
+.pager-link + .pager-link {
+  border-left: 1px solid var(--line);
+}
+
+.pager-link.next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.pager-link:hover {
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.pager-link span {
+  color: var(--accent);
+  font-size: 0.65rem;
+}
+
+.pager-link strong {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.document-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper-raised) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .mobile-brand {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+
+  .menu-toggle {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 0.25rem;
+    font-size: 0.72rem;
+  }
+
+  .sidebar {
+    top: 3.5rem;
+    width: min(88vw, 330px);
+    transform: translateX(-102%);
+    box-shadow: 1rem 0 2rem rgb(0 0 0 / 16%);
+    transition: transform 180ms ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  main {
+    margin-left: 0;
+  }
+
+  .reading-progress {
+    left: 0;
+  }
+
+  .article-shell {
+    width: min(calc(100% - 2rem), var(--content-width));
+    padding-top: 2.2rem;
+  }
+
+  .page-meta {
+    margin-bottom: 2.5rem;
+  }
+}
+
+@media (max-width: 620px) {
+  article > h1:first-child {
+    margin-bottom: 2.6rem;
+    font-size: 2.65rem;
+  }
+
+  .overview article > h1:first-child {
+    font-size: 3.15rem;
+  }
+
+  h2 {
+    margin-top: 3.8rem;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .page-meta span:last-child {
+    display: none;
+  }
+
+  .pager {
+    grid-template-columns: 1fr;
+  }
+
+  .pager-link.next {
+    grid-column: 1;
+  }
+
+  .pager-link + .pager-link {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .document-footer {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
+@media print {
+  .sidebar,
+  .mobile-header,
+  .reading-progress,
+  .pager,
+  .copy-code {
+    display: none !important;
+  }
+
+  main {
+    margin: 0;
+  }
+
+  .article-shell {
+    width: 100%;
+    padding: 0;
+  }
+}
+
+  </style>
+</head>
+<body class="lesson">
+  <a class="skip-link" href="#content">본문으로 건너뛰기</a>
+  <header class="mobile-header">
+    <a class="mobile-brand" href="index.html">LIKELION / BACKEND</a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">목차</button>
+  </header>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-block">
+      <a class="brand" href="index.html"><span>LIKELION</span><strong>BACKEND<br>STUDY</strong></a>
+      <p>Python · FastAPI · PostgreSQL</p>
+    </div>
+    <nav class="week-nav" aria-label="커리큘럼"><a href="index.html"><span>Overview</span><strong>14주 전체 로드맵</strong></a>
+<a href="week-01.html"><span>Week 01</span><strong>Git & GitHub I</strong></a>
+<a href="week-02.html"><span>Week 02</span><strong>Git & GitHub II</strong></a>
+<a href="week-03.html"><span>Week 03</span><strong>HTTP/HTTPS 1탄</strong></a>
+<a href="week-04.html"><span>Week 04</span><strong>HTTP/HTTPS 2탄</strong></a>
+<a href="week-05.html"><span>Week 05</span><strong>REST API</strong></a>
+<a href="week-06.html"><span>Week 06</span><strong>Local DB &amp; API 조회</strong></a>
+<a href="week-07.html"><span>Week 07</span><strong>User CRUD &amp; Validation</strong></a>
+<a href="week-08.html" aria-current="page" class="active"><span>Week 08</span><strong>Backend Layers</strong></a>
+<a href="week-09.html"><span>Week 09</span><strong>Database II</strong></a>
+<a href="week-10.html"><span>Week 10</span><strong>Docker & DB</strong></a>
+<a href="week-11.html"><span>Week 11</span><strong>SQLAlchemy ORM</strong></a>
+<a href="week-12.html"><span>Week 12</span><strong>Authentication I</strong></a>
+<a href="week-13.html"><span>Week 13</span><strong>Authentication II</strong></a>
+<a href="week-14.html"><span>Week 14</span><strong>Final Integration</strong></a></nav>
+    <div class="sidebar-footer">
+      <span>2026 FALL</span>
+      <button class="theme-toggle" type="button" aria-label="색상 테마 전환">LIGHT / DARK</button>
+    </div>
+  </aside>
+  <main id="content">
+    <div class="reading-progress" aria-hidden="true"><span></span></div>
+    <div class="article-shell">
+      <div class="page-meta"><span>WEEK 08 · 14</span><span>PYTHON 3.13 · FASTAPI</span></div>
+      <article>
+<h1>Week 08 — Backend Layers</h1>
+<p>7주차의 main.py를 역할별 파일로 분리하기 · 60분 실습</p>
+<p>Layer는 관련된 책임을 모아 둔 코드의 구분입니다. 책임은 그 코드가 맡은 일입니다. 이번 수업에서는 데이터 형식, HTTP 처리, DB 조회·저장을 구별합니다. 폴더를 많이 만드는 것이 목표는 아닙니다.</p>
+<p>Refactoring은 외부에서 보이는 동작을 유지하면서 내부 코드를 바꾸는 작업입니다. 이번에는 7주차의 URL, 입력 규칙, 응답 필드, status code를 유지합니다. 새 CRUD 기능이나 DB table은 추가하지 않습니다.</p>
+<nav class="lesson-toc" aria-label="이번 주 목차"><strong>오늘의 순서</strong><ol><li><a href="#baseline">분리 전 결과 기록</a></li><li><a href="#roles">역할 구별</a></li><li><a href="#model">Model 분리</a></li><li><a href="#repository">Repository 분리</a></li><li><a href="#router">Router 분리</a></li><li><a href="#verify">분리 전후 비교</a></li></ol></nav>
+<table><thead><tr><th>시간</th><th>작업</th></tr></thead><tbody><tr><td>0–10분</td><td>CRUD 결과 기록, main.py의 역할 표시</td></tr><tr><td>10–20분</td><td>Model 이동 후 실행</td></tr><tr><td>20–35분</td><td>Repository 이동 후 실행</td></tr><tr><td>35–50분</td><td>Router 이동과 등록</td></tr><tr><td>50–60분</td><td>응답 비교, 요청 경로 설명</td></tr></tbody></table>
+<h2 id="baseline">1. 분리 전 결과 기록</h2>
+<p>7주차 CRUD가 동작하는 코드로 시작합니다. .env.local과 database.py는 유지합니다. 먼저 다음 명령을 실행합니다.</p>
+<pre><code class="language-shell">uv sync
+uv run pytest
+uv run fastapi dev app/main.py</code></pre>
+<p>Swagger UI인 http://127.0.0.1:8000/docs를 엽니다. Swagger UI는 API 요청을 보내고 응답을 확인하는 웹 화면입니다. 자신의 실습 email로 POST를 실행합니다. 반환된 id를 기록하고 GET, PATCH, DELETE에 같은 id를 사용합니다.</p>
+<table><thead><tr><th>요청</th><th>유지할 결과</th></tr></thead><tbody><tr><td>GET /users</td><td>200, items 안에 id/name/email</td></tr><tr><td>POST /users</td><td>201, 생성된 사용자</td></tr><tr><td>PATCH /users/{id}</td><td>200, name만 변경</td></tr><tr><td>DELETE /users/{id}</td><td>204, 빈 body</td></tr><tr><td>없는 id 조회</td><td>404</td></tr><tr><td>중복 email 생성</td><td>409</td></tr><tr><td>빈 name 입력</td><td>422</td></tr></tbody></table>
+<h2 id="roles">2. 파일 이름보다 역할 먼저</h2>
+<table><thead><tr><th>구분</th><th>맡은 일</th><th>이번 예제</th></tr></thead><tbody><tr><td>Model</td><td>입력·출력 데이터의 형식과 검증 규칙</td><td>name 길이, email 형식, 응답 필드</td></tr><tr><td>Router</td><td>HTTP 요청을 함수에 연결하고 응답을 결정</td><td>POST /users, 201, 404, 409</td></tr><tr><td>Repository</td><td>SQL을 실행하고 조회·저장 결과를 반환</td><td>INSERT, UPDATE, SELECT</td></tr><tr><td>Database 연결 함수</td><td>접속 설정을 읽고 연결을 생성</td><td>get_connection()</td></tr><tr><td>main.py</td><td>앱을 만들고 Router를 등록</td><td>FastAPI(), include_router()</td></tr></tbody></table>
+<p>이번 Model은 Pydantic Model입니다. Pydantic은 Python 데이터의 형식과 규칙을 검사하는 도구입니다. 이 Model은 DB table과 같은 것이 아닙니다. Model을 옮겨도 Supabase table은 바뀌지 않습니다.</p>
+<p>Import는 다른 Python module의 이름을 현재 파일에서 사용하는 문법입니다. Module은 여기서 Python 파일 하나입니다. 예를 들어 from app.model.user import UserCreate는 app/model/user.py에 정의된 UserCreate를 가져옵니다.</p>
+<details><summary>확인: email 길이 규칙과 INSERT SQL은 같은 파일에 두어야 할까요?</summary><p>이번 구조에서는 나눕니다. 입력 형식은 Model에 둡니다. DB 저장 SQL은 Repository에 둡니다. HTTP status code는 Router에서 결정합니다.</p></details>
+<h2 id="model">3. Model 먼저 분리</h2>
+<ol><li>app 안에 model 폴더를 만듭니다. 빈 __init__.py를 넣습니다. 이 파일은 폴더를 Python package로 명시합니다.</li><li>app/model/user.py를 만듭니다.</li><li>main.py의 UserName과 네 Model class를 아래 파일로 옮깁니다.</li><li>main.py에서 해당 정의와 사용하지 않는 Pydantic import를 제거합니다.</li><li>main.py에서 Model을 import합니다.</li></ol>
+<pre><code class="language-python">from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints, field_validator
+
+UserName = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)
+]
+
+
+class UserCreate(BaseModel):
+    model_config = ConfigDict(extra=&quot;forbid&quot;)
+    name: UserName
+    email: EmailStr
+
+    @field_validator(&quot;email&quot;)
+    @classmethod
+    def normalize_email(cls, value: str) -&gt; str:
+        return value.lower()
+
+
+class UserNamePatch(BaseModel):
+    model_config = ConfigDict(extra=&quot;forbid&quot;)
+    name: UserName
+
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+
+
+class UserListResponse(BaseModel):
+    items: list[UserResponse]</code></pre><pre><code class="language-python">from app.model.user import UserCreate, UserListResponse, UserNamePatch, UserResponse</code></pre>
+<p>서버를 다시 실행하고 POST와 GET을 확인합니다. 이름이 같은 class를 두 파일에 남기지 않습니다. 이 단계에서는 SQL과 endpoint가 아직 main.py에 있습니다.</p>
+<h2 id="repository">4. Repository로 SQL 이동</h2>
+<p>Repository는 DB에 접근하는 함수를 모은 module입니다. Router는 필요한 값을 전달하고 Repository는 결과를 돌려줍니다. Repository는 이번 구조에서 HTTPException을 만들지 않습니다.</p>
+<ol><li>app/repository 폴더와 빈 __init__.py를 만듭니다.</li><li>user_repository.py에 아래 함수를 작성합니다.</li><li>main.py의 각 endpoint에서 with get_connection() 블록을 제거합니다.</li><li>제거한 위치에서 해당 Repository 함수를 호출합니다.</li></ol>
+<pre><code class="language-python">from app.database import get_connection
+
+
+def get_all_users(limit: int = 20):
+    with get_connection() as conn:
+        return conn.execute(
+            &quot;SELECT id, name, email FROM public.users ORDER BY id LIMIT %s&quot;,
+            (limit,),
+        ).fetchall()
+
+
+def get_user_by_id(user_id: int):
+    with get_connection() as conn:
+        return conn.execute(
+            &quot;SELECT id, name, email FROM public.users WHERE id = %s&quot;,
+            (user_id,),
+        ).fetchone()
+
+
+def create_user(name: str, email: str):
+    with get_connection() as conn:
+        return conn.execute(
+            &quot;&quot;&quot;INSERT INTO public.users (name, email, password_hash)
+               VALUES (%s, %s, %s)
+               RETURNING id, name, email&quot;&quot;&quot;,
+            (name, email, &quot;!dummy-no-login&quot;),
+        ).fetchone()
+
+
+def update_user_name(user_id: int, name: str):
+    with get_connection() as conn:
+        return conn.execute(
+            &quot;&quot;&quot;UPDATE public.users SET name = %s WHERE id = %s
+               RETURNING id, name, email&quot;&quot;&quot;,
+            (name, user_id),
+        ).fetchone()
+
+
+def delete_user(user_id: int):
+    with get_connection() as conn:
+        return conn.execute(
+            &quot;DELETE FROM public.users WHERE id = %s RETURNING id&quot;,
+            (user_id,),
+        ).fetchone()</code></pre>
+<p>예를 들어 POST endpoint의 try 안에서 아래 호출을 사용합니다. 409로 변환하는 except는 main.py에 남깁니다.</p>
+<pre><code class="language-python">from app.repository import user_repository
+
+# create_user endpoint의 try 블록 안
+return user_repository.create_user(body.name, str(body.email))</code></pre>
+<p>user_repository.create_user의 점은 module 안의 함수를 선택합니다. module 이름을 생략하면 현재 endpoint인 create_user를 다시 호출할 수 있습니다. 서로 다른 함수임을 명확하게 표시합니다.</p>
+<p>GET 목록은 get_all_users(limit), GET 한 명은 get_user_by_id(user_id)를 호출합니다. PATCH는 update_user_name(user_id, body.name), DELETE는 delete_user(user_id)를 호출합니다. None을 404로 바꾸는 코드는 main.py에 남깁니다.</p>
+<p>Repository의 with 블록은 그대로 옮깁니다. 정상 종료 시 commit하고, 오류 시 rollback하는 경계가 바뀌지 않습니다. 함수 안의 return도 with의 종료 처리를 거친 뒤 호출한 곳으로 돌아갑니다.</p>
+<p>tests/test_users.py의 DB 대체 위치도 변경합니다. Mock은 실제 DB 대신 정해진 결과를 주는 테스트용 객체입니다. get_connection을 호출하는 곳이 main에서 user_repository로 바뀌었으므로 아래처럼 수정합니다. 기존 app.main의 app import는 유지합니다.</p>
+<pre><code class="language-python">from app import database
+from app.repository import user_repository
+
+# db_connection fixture 안의 기존 monkeypatch.setattr 줄을 교체
+monkeypatch.setattr(user_repository, &quot;get_connection&quot;, lambda: manager)</code></pre>
+<p>uv run pytest를 실행합니다. 같은 API 테스트가 통과하는지 확인한 후 다음 단계로 갑니다.</p>
+<h2 id="router">5. Router 분리와 앱 등록</h2>
+<p>Router는 관련 endpoint를 묶는 객체입니다. APIRouter는 FastAPI가 제공하는 Router class입니다. app/router 폴더에 빈 __init__.py와 users.py를 만듭니다. main.py의 사용자 endpoint를 다음 코드로 옮깁니다.</p>
+<pre><code class="language-python">from app.model.user import UserCreate, UserListResponse, UserNamePatch, UserResponse
+from app.repository import user_repository
+from fastapi import APIRouter, HTTPException, Query, Response
+from psycopg.errors import UniqueViolation
+
+router = APIRouter()
+
+
+@router.get(&quot;/users&quot;, tags=[&quot;users&quot;], response_model=UserListResponse)
+def list_users(limit: int = Query(default=20, ge=1, le=100)):
+    return {&quot;items&quot;: user_repository.get_all_users(limit)}
+
+
+@router.get(&quot;/users/{user_id}&quot;, tags=[&quot;users&quot;], response_model=UserResponse)
+def read_user(user_id: int):
+    user = user_repository.get_user_by_id(user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail=&quot;User not found&quot;)
+    return user
+
+
+@router.post(&quot;/users&quot;, tags=[&quot;users&quot;], status_code=201, response_model=UserResponse)
+def create_user(body: UserCreate):
+    try:
+        return user_repository.create_user(body.name, str(body.email))
+    except UniqueViolation as exc:
+        if exc.diag.constraint_name != &quot;users_email_key&quot;:
+            raise
+        raise HTTPException(status_code=409, detail=&quot;Email already exists&quot;) from exc
+
+
+@router.patch(&quot;/users/{user_id}&quot;, tags=[&quot;users&quot;], response_model=UserResponse)
+def update_user(user_id: int, body: UserNamePatch):
+    user = user_repository.update_user_name(user_id, body.name)
+    if user is None:
+        raise HTTPException(status_code=404, detail=&quot;User not found&quot;)
+    return user
+
+
+@router.delete(
+    &quot;/users/{user_id}&quot;, tags=[&quot;users&quot;], status_code=204, response_class=Response
+)
+def delete_user(user_id: int):
+    deleted = user_repository.delete_user(user_id)
+    if deleted is None:
+        raise HTTPException(status_code=404, detail=&quot;User not found&quot;)
+    return Response(status_code=204)</code></pre>
+<p>@router.get 또는 @router.post는 바로 아래 함수를 요청 경로에 연결합니다. 기존 @app.get을 @router.get으로 바꿉니다. HTTPException, Query, Response와 UniqueViolation import도 사용하는 파일로 이동합니다.</p>
+<p>main.py에는 다음 코드를 남깁니다. include_router는 users Router의 endpoint를 실제 앱에 등록합니다. 등록하지 않으면 /users 요청은 404가 됩니다.</p>
+<pre><code class="language-python">from fastapi import FastAPI
+from app.router.users import router as users_router
+
+app = FastAPI(title=&quot;LikeLion Backend Study&quot;)
+app.include_router(users_router)
+
+@app.get(&quot;/&quot;, tags=[&quot;root&quot;])
+def read_root() -&gt; dict[str, str]:
+    return {&quot;message&quot;: &quot;Hello World&quot;}
+
+@app.get(&quot;/health&quot;, tags=[&quot;health&quot;])
+async def health() -&gt; dict[str, str]:
+    return {&quot;status&quot;: &quot;ok&quot;, &quot;project_name&quot;: &quot;2026 Fall Backend&quot;}
+</code></pre>
+<p>as users_router는 가져온 router에 현재 파일에서 사용할 이름을 붙입니다. main.py는 Router를 import하고 Router는 Repository와 Model을 import합니다. Repository는 database.py를 import합니다. Repository에서 main.py를 import하지 않습니다.</p>
+<pre><code>app/
+  main.py
+  database.py
+  model/__init__.py
+  model/user.py
+  router/__init__.py
+  router/users.py
+  repository/__init__.py
+  repository/user_repository.py</code></pre>
+<h2 id="verify">6. 요청 하나를 끝까지 추적</h2>
+<p>GET /users/1을 예로 듭니다. 1은 조회할 사용자 id입니다.</p>
+<ol><li>FastAPI가 등록된 Router의 read_user에 정수 1을 전달합니다.</li><li>Router가 user_repository.get_user_by_id(1)을 호출합니다.</li><li>Repository가 get_connection()으로 연결을 엽니다.</li><li>Repository가 id가 1인 데이터를 조회하고 결과를 돌려줍니다.</li><li>Router는 결과가 None이면 404를 반환합니다. 데이터가 있으면 UserResponse 형식으로 응답합니다.</li></ol>
+<p>분리 전과 같은 CRUD 요청과 실패 요청을 반복합니다. uv run pytest와 uv run ruff check app tests를 실행합니다. 테스트는 실제 DB 연결을 대신하므로 Swagger UI에서도 본인의 계정으로 확인합니다.</p>
+<details><summary>오류 확인</summary><ul><li>ModuleNotFoundError: 프로젝트 루트에서 실행했는지, 경로와 파일 이름이 맞는지 확인합니다.</li><li>/users만 404: main.py의 include_router를 확인합니다.</li><li>함수가 반복 호출됨: endpoint에서 자기 자신을 호출했는지 확인합니다. module 이름을 붙입니다.</li><li>테스트가 실제 DB에 접근함: Mock이 Repository의 get_connection을 교체하는지 확인합니다.</li></ul></details>
+<h3>Service layer는 언제 추가할까?</h3>
+<p>Service layer는 업무 규칙이나 여러 작업의 순서를 모으는 곳입니다. 예를 들어 주문 생성 전에 재고 확인과 금액 계산이 필요하면 그 흐름을 담당할 수 있습니다. 현재 사용자 CRUD에는 그런 흐름이 적으므로 이번에는 추가하지 않습니다. 여러 DB 변경을 함께 확정해야 할 때는 transaction의 책임도 함께 설계해야 합니다.</p>
+<h3>완료 기준</h3><ul><li>CRUD URL과 응답이 7주차와 같습니다.</li><li>입력·출력 정의는 Model에 있습니다.</li><li>SQL은 Repository에 있습니다.</li><li>HTTP status 처리는 Router에 있습니다.</li><li>main.py가 Router를 등록합니다.</li><li>기존 테스트가 통과합니다.</li><li>요청부터 SQL 실행과 응답까지 함수 호출 순서를 설명할 수 있습니다.</li></ul>
+<details><summary>복습: 이름 길이를 바꿀 때와 정렬 순서를 바꿀 때 어느 파일을 수정할까?</summary><p>이름 길이는 model/user.py의 UserName을 수정합니다. 정렬 순서는 repository/user_repository.py의 ORDER BY를 수정합니다. 사용자 없음의 HTTP 응답을 바꾸려면 router/users.py를 수정합니다.</p></details>
+<h3>공식 참고 자료</h3><ul><li><a href="https://fastapi.tiangolo.com/tutorial/bigger-applications/">FastAPI: APIRouter와 여러 파일 구성</a></li><li><a href="https://fastapi.tiangolo.com/tutorial/response-model/">FastAPI: response model</a></li></ul>
+</article>
+      <nav class="pager" aria-label="이전 및 다음 문서"><a class="pager-link previous" href="week-07.html"><span>이전</span><strong>Week 07 · User CRUD &amp; Validation</strong></a><a class="pager-link next" href="week-09.html"><span>다음</span><strong>Week 09 · Database II</strong></a></nav>
+      <footer class="document-footer">
+        <span>2026 Fall Backend Study</span>
+        <a href="index.html">전체 커리큘럼으로</a>
+      </footer>
+    </div>
+  </main>
+  <script>
+(() => {
+  const root = document.documentElement;
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem("backend-study-theme");
+  } catch {
+    // Some browsers restrict storage for files opened directly from disk.
+  }
+  const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = savedTheme || (preferredDark ? "dark" : "light");
+
+  document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem("backend-study-theme", next);
+    } catch {
+      // The current page still changes theme even when storage is unavailable.
+    }
+  });
+
+  const sidebar = document.querySelector(".sidebar");
+  const menuToggle = document.querySelector(".menu-toggle");
+  menuToggle?.addEventListener("click", () => {
+    const isOpen = sidebar?.classList.toggle("open") ?? false;
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (window.innerWidth > 900 || !sidebar?.classList.contains("open")) return;
+    if (sidebar.contains(event.target) || menuToggle?.contains(event.target)) return;
+    sidebar.classList.remove("open");
+    menuToggle?.setAttribute("aria-expanded", "false");
+  });
+
+  document.querySelectorAll("pre").forEach((block) => {
+    const button = document.createElement("button");
+    button.className = "copy-code";
+    button.type = "button";
+    button.textContent = "COPY";
+    button.setAttribute("aria-label", "코드 복사");
+    button.addEventListener("click", async () => {
+      const code = block.querySelector("code")?.textContent ?? "";
+      let copied = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+          copied = true;
+        }
+      } catch {
+        copied = false;
+      }
+      if (!copied) {
+        const textarea = document.createElement("textarea");
+        textarea.value = code;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.append(textarea);
+        textarea.select();
+        copied = document.execCommand("copy");
+        textarea.remove();
+      }
+      button.textContent = copied ? "COPIED" : "SELECT & COPY";
+      window.setTimeout(() => (button.textContent = "COPY"), 1200);
+    });
+    block.append(button);
+  });
+
+  const progressBar = document.querySelector(".reading-progress span");
+  const updateProgress = () => {
+    const distance = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = distance > 0 ? (window.scrollY / distance) * 100 : 0;
+    if (progressBar) progressBar.style.width = `${Math.min(100, progress)}%`;
+  };
+  document.addEventListener("scroll", updateProgress, { passive: true });
+  updateProgress();
+
+  const diagrams = document.querySelectorAll(".mermaid");
+  if (diagrams.length) {
+    import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs")
+      .then(({ default: mermaid }) => {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: root.dataset.theme === "dark" ? "dark" : "neutral",
+          securityLevel: "strict",
+          fontFamily: "system-ui, sans-serif",
+        });
+        return mermaid.run({ nodes: diagrams });
+      })
+      .catch(() => {
+        diagrams.forEach((diagram) => diagram.classList.add("mermaid-unavailable"));
+      });
+  }
+})();
+
+  </script>
+</body>
+</html>

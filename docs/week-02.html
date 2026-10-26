@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="2026 LikeLion Backend Study — Python과 FastAPI로 배우는 14주 백엔드 커리큘럼">
+  <title>Week 02 — Git &amp; GitHub II: 브랜치로 작업하고 함께 합치기 · LikeLion Backend Study</title>
+  <style>
+:root {
+  color-scheme: light;
+  --paper: #f4f1e8;
+  --paper-raised: #fffdf7;
+  --ink: #16211d;
+  --muted: #68736d;
+  --line: #c9cec8;
+  --accent: #ff5c35;
+  --accent-soft: #ffe1d7;
+  --forest: #123b2e;
+  --code: #11201b;
+  --code-ink: #e7f5ec;
+  --sidebar-width: 292px;
+  --content-width: 850px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #101713;
+  --paper-raised: #17201b;
+  --ink: #edf4ef;
+  --muted: #a9b5ae;
+  --line: #35423b;
+  --accent: #ff7959;
+  --accent-soft: #4a291f;
+  --forest: #b9efcf;
+  --code: #09100d;
+  --code-ink: #dff4e6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Pretendard, "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+  line-height: 1.78;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -5rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  display: flex;
+  width: var(--sidebar-width);
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.brand-block {
+  padding: 2rem 1.65rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: block;
+  text-decoration: none;
+}
+
+.brand span,
+.page-meta,
+.sidebar-footer,
+.pager-link span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.brand span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.brand strong {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+
+.brand-block p {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.week-nav {
+  display: grid;
+  padding: 0.8rem;
+  gap: 0.18rem;
+}
+
+.week-nav a {
+  display: grid;
+  grid-template-columns: 4.7rem 1fr;
+  align-items: baseline;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  text-decoration: none;
+}
+
+.week-nav a:hover {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.week-nav a.active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: var(--paper-raised);
+}
+
+[data-theme="dark"] .week-nav a.active {
+  background: #234b3b;
+  color: #f7fff9;
+}
+
+.week-nav span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+}
+
+.week-nav a.active span {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.week-nav strong {
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+
+.sidebar-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 1rem 1.55rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.theme-toggle,
+.menu-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.theme-toggle:hover,
+.menu-toggle:hover {
+  color: var(--accent);
+}
+
+main {
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+}
+
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto var(--sidebar-width);
+  z-index: 30;
+  height: 3px;
+  background: transparent;
+}
+
+.reading-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+}
+
+.article-shell {
+  width: min(calc(100% - 3rem), var(--content-width));
+  margin: 0 auto;
+  padding: 4.3rem 0 3rem;
+}
+
+.page-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3.8rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+article > h1:first-child {
+  max-width: 790px;
+  margin: 0 0 3.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-weight: 600;
+  letter-spacing: -0.064em;
+  line-height: 0.98;
+}
+
+.overview article > h1:first-child {
+  font-size: clamp(3.25rem, 7.3vw, 6.75rem);
+}
+
+article > p:nth-child(2) {
+  color: var(--muted);
+}
+
+h2 {
+  margin: 4.8rem 0 1.45rem;
+  padding-top: 1.2rem;
+  border-top: 3px solid var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+h3 {
+  margin: 3rem 0 0.8rem;
+  color: var(--forest);
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+h4 {
+  margin: 2rem 0 0.5rem;
+}
+
+.heading-anchor {
+  margin-left: 0.35rem;
+  color: var(--line);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+.heading-anchor:focus {
+  opacity: 1;
+}
+
+p,
+li {
+  font-size: 1rem;
+}
+
+strong {
+  font-weight: 750;
+}
+
+blockquote {
+  margin: 2rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 0;
+  border-left: 5px solid var(--accent);
+  background: var(--accent-soft);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+}
+
+blockquote p {
+  margin: 0;
+  font-size: inherit;
+}
+
+ul,
+ol {
+  padding-left: 1.35rem;
+}
+
+li + li {
+  margin-top: 0.35rem;
+}
+
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.45rem;
+  accent-color: var(--accent);
+  vertical-align: -0.12rem;
+}
+
+table {
+  display: table;
+  width: 100%;
+  margin: 1.75rem 0 2.5rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  padding: 0.75rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  border-bottom: 2px solid var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+code {
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+p code,
+li code,
+td code {
+  padding: 0.13em 0.35em;
+}
+
+pre {
+  position: relative;
+  margin: 1.7rem 0 2.2rem;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--code-ink) 15%, transparent);
+  border-radius: 0.45rem;
+  background: var(--code);
+  color: var(--code-ink);
+  box-shadow: 0 1.2rem 2.5rem rgb(10 22 16 / 10%);
+}
+
+pre code {
+  display: block;
+  min-width: max-content;
+  padding: 1.35rem 1.45rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.copy-code {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 0.25rem;
+  background: rgb(0 0 0 / 28%);
+  color: #dce9e1;
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+}
+
+.mermaid {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 2rem 0 2.5rem;
+  overflow-x: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  background: var(--paper-raised);
+  text-align: center;
+}
+
+.pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 6rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.pager-link {
+  display: flex;
+  min-height: 7.5rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.2rem;
+  text-decoration: none;
+}
+
+.pager-link + .pager-link {
+  border-left: 1px solid var(--line);
+}
+
+.pager-link.next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.pager-link:hover {
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.pager-link span {
+  color: var(--accent);
+  font-size: 0.65rem;
+}
+
+.pager-link strong {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.document-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper-raised) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .mobile-brand {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+
+  .menu-toggle {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 0.25rem;
+    font-size: 0.72rem;
+  }
+
+  .sidebar {
+    top: 3.5rem;
+    width: min(88vw, 330px);
+    transform: translateX(-102%);
+    box-shadow: 1rem 0 2rem rgb(0 0 0 / 16%);
+    transition: transform 180ms ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  main {
+    margin-left: 0;
+  }
+
+  .reading-progress {
+    left: 0;
+  }
+
+  .article-shell {
+    width: min(calc(100% - 2rem), var(--content-width));
+    padding-top: 2.2rem;
+  }
+
+  .page-meta {
+    margin-bottom: 2.5rem;
+  }
+}
+
+@media (max-width: 620px) {
+  article > h1:first-child {
+    margin-bottom: 2.6rem;
+    font-size: 2.65rem;
+  }
+
+  .overview article > h1:first-child {
+    font-size: 3.15rem;
+  }
+
+  h2 {
+    margin-top: 3.8rem;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .page-meta span:last-child {
+    display: none;
+  }
+
+  .pager {
+    grid-template-columns: 1fr;
+  }
+
+  .pager-link.next {
+    grid-column: 1;
+  }
+
+  .pager-link + .pager-link {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .document-footer {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
+@media print {
+  .sidebar,
+  .mobile-header,
+  .reading-progress,
+  .pager,
+  .copy-code {
+    display: none !important;
+  }
+
+  main {
+    margin: 0;
+  }
+
+  .article-shell {
+    width: 100%;
+    padding: 0;
+  }
+}
+
+
+.lesson-toc, details { padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: .4rem; background: var(--paper-raised); margin: 1rem 0; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+h2, h3 { scroll-margin-top: 4.5rem; }
+article { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="lesson">
+  <a class="skip-link" href="#content">본문으로 건너뛰기</a>
+  <header class="mobile-header">
+    <a class="mobile-brand" href="index.html">LIKELION / BACKEND</a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">목차</button>
+  </header>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-block">
+      <a class="brand" href="index.html"><span>LIKELION</span><strong>BACKEND<br>STUDY</strong></a>
+      <p>Python · FastAPI · PostgreSQL</p>
+    </div>
+    <nav class="week-nav" aria-label="커리큘럼"><a href="index.html"><span>Overview</span><strong>14주 전체 로드맵</strong></a>
+<a href="week-01.html"><span>Week 01</span><strong>Git & GitHub I</strong></a>
+<a href="week-02.html" aria-current="page" class="active"><span>Week 02</span><strong>Git & GitHub II</strong></a>
+<a href="week-03.html"><span>Week 03</span><strong>HTTP/HTTPS 1탄</strong></a>
+<a href="week-04.html"><span>Week 04</span><strong>HTTP/HTTPS 2탄</strong></a>
+<a href="week-05.html"><span>Week 05</span><strong>REST API</strong></a>
+<a href="week-06.html"><span>Week 06</span><strong>Local DB &amp; API 조회</strong></a>
+<a href="week-07.html"><span>Week 07</span><strong>User CRUD &amp; Validation</strong></a>
+<a href="week-08.html"><span>Week 08</span><strong>Backend Layers</strong></a>
+<a href="week-09.html"><span>Week 09</span><strong>Database II</strong></a>
+<a href="week-10.html"><span>Week 10</span><strong>Docker & DB</strong></a>
+<a href="week-11.html"><span>Week 11</span><strong>SQLAlchemy ORM</strong></a>
+<a href="week-12.html"><span>Week 12</span><strong>Authentication I</strong></a>
+<a href="week-13.html"><span>Week 13</span><strong>Authentication II</strong></a>
+<a href="week-14.html"><span>Week 14</span><strong>Final Integration</strong></a></nav>
+    <div class="sidebar-footer">
+      <span>2026 FALL</span>
+      <button class="theme-toggle" type="button" aria-label="색상 테마 전환">LIGHT / DARK</button>
+    </div>
+  </aside>
+  <main id="content">
+    <div class="reading-progress" aria-hidden="true"><span></span></div>
+    <div class="article-shell">
+      <div class="page-meta"><span>WEEK 02 · 14</span><span>PYTHON 3.13 · FASTAPI</span></div>
+      <article><h1 id="week-02-git-github-ii">Week 02 — Git &amp; GitHub II: 브랜치로 작업하고 함께 합치기</h1>
+<p>지난주에는 변경을 기록했습니다. 이번 주에는 GitHub에서 변경을 공유하고 검토한 뒤 main에 합치는 과정을 배웁니다. <a href="week-01.html">이전: Git 기본기</a> · <a href="index.html">전체 커리큘럼</a></p>
+<p><strong>실습 장소:</strong> 1주차에 만든 본인의 <code>backend-study</code> 저장소에서 이어서 진행합니다. 본인 origin에 작업 브랜치를 올리고 본인 main으로 PR을 엽니다. <a href="https://github.com/jude-mok/2026_Fall_Backend_Study">참고 답안 저장소</a>에는 push하거나 PR을 제출하지 않습니다. 팀 협업 상황은 개인 저장소에서 재현합니다.</p>
+<nav class="lesson-toc" aria-label="2주차 본문 목차"><strong>학습 순서</strong><ol>
+<li><a href="#_1">학습 목표와 수업 흐름</a></li><li><a href="#_2">왜 브랜치를 나눌까요?</a></li><li><a href="#remote">remote · origin · clone</a></li><li><a href="#sync">fetch · pull · push</a></li><li><a href="#upstream">upstream 이해하기</a></li><li><a href="#_3">브랜치에서 PR까지</a></li><li><a href="#integration">merge와 rebase</a></li><li><a href="#_5">충돌 만들고 해결하기</a></li><li><a href="#_4">명령어와 용어 정리</a></li><li><a href="#_6">실습 완료 기준</a></li><li><a href="#_9">이해 확인</a></li><li><a href="#_10">참고 자료와 추가 연습</a></li></ol></nav>
+<h2 id="_1">0. 오늘 어디까지 할까요?<a class="heading-anchor" href="#_1" title="이 섹션 링크">&para;</a></h2>
+<p>오늘의 결과물은 <strong>작업 브랜치에서 README를 수정하고, PR에서 변경을 검토한 뒤 main에 반영한 개인 저장소</strong>입니다. 아직 FastAPI 코드를 작성할 필요는 없습니다.</p>
+<ul><li>브랜치를 나누는 이유를 설명할 수 있습니다.</li><li>main, origin, origin/main을 구분할 수 있습니다.</li><li>fetch와 pull이 무엇을 바꾸는지 예상할 수 있습니다.</li><li>PR을 만들고 수정 사항을 추가한 뒤 병합할 수 있습니다.</li><li>충돌을 해결하고 merge와 rebase의 차이를 설명할 수 있습니다.</li></ul>
+<p><strong>리드 진행 순서:</strong> 개념 설명 20분 → 브랜치·PR 실습 30분 → 충돌 실습 20분 → merge/rebase 비교와 복습 20분. 진행 속도에 따라 rebase 실습은 선택 과제로 남겨도 됩니다.</p>
+<blockquote><p>“지난주에는 내 변경을 기록했습니다. 오늘은 검토가 끝난 변경을 다른 작업과 합치는 방법을 배웁니다.”</p></blockquote>
+<h2 id="_2">1. 왜 브랜치를 나눠서 작업할까요?<a class="heading-anchor" href="#_2" title="이 섹션 링크">&para;</a></h2>
+<p>지민은 로그인 기능, 수현은 게시글 조회 기능을 만든다고 생각해 봅시다. 둘 다 main에 미완성 코드를 올리면 안정적으로 실행되는 버전과 작업 중인 버전을 구분하기 어렵습니다. 그래서 <strong>main은 검토한 상태로 유지하고, 작업마다 브랜치를 만들어 준비된 변경만 합칩니다.</strong></p>
+<p>브랜치는 별도의 폴더 복사본이 아니라 <strong>커밋을 가리키는 이동 가능한 이름</strong>입니다. 커밋하면 현재 브랜치가 새 커밋을 가리킵니다. 브랜치를 바꾸면 Git이 작업 폴더의 파일을 해당 버전에 맞춥니다.</p>
+<pre><code class="language-bash">main             A──B
+                    ├──C──D  feature/login
+                    └──E──F  feature/posts
+</code></pre>
+<p>로그인 브랜치에서 커밋해도 main에는 바로 반영되지 않습니다. 각각 검토한 뒤 합칠 수 있어 작업 범위와 변경 이유를 파악하기 쉽습니다. 브랜치를 사용해도 같은 부분을 다르게 수정하면 충돌은 생길 수 있습니다.</p><blockquote><p>예상해 보기: “로그인 기능이 아직 절반만 완성됐다면, 팀원들이 사용하는 main에 바로 넣어도 될까요?”</p></blockquote>
+<p>브랜치는 Git의 기능이고 GitHub 없이도 만들 수 있습니다. GitHub는 그 브랜치를 공유하고 PR로 검토하는 장소입니다.</p>
+<h2 id="remote">2. 원격 저장소: remote, origin, clone<a class="heading-anchor" href="#remote" title="이 섹션 링크">&para;</a></h2>
+<h3>origin은 저장소 주소에 붙인 별명입니다</h3><p>Git은 로컬에서 버전을 관리하는 도구이고, GitHub는 저장소를 온라인에 보관하고 협업하는 서비스입니다. <strong>remote</strong>는 다른 저장소와의 연결이며 <strong>origin</strong>은 그 연결에 관례적으로 붙이는 이름입니다. GitHub 자체나 브랜치 이름이 아닙니다.</p>
+<pre><code class="language-bash">git remote -v
+</code></pre>
+<p>출력 예시입니다. <code>YOUR_ID</code>에는 본인의 GitHub 계정 이름이 표시되어야 합니다.</p>
+<pre><code class="language-bash">origin  https://github.com/YOUR_ID/backend-study.git (fetch)
+origin  https://github.com/YOUR_ID/backend-study.git (push)
+</code></pre>
+<p>fetch 주소는 가져올 곳, push 주소는 보낼 곳입니다. 이번 실습에서는 같은 주소를 사용합니다. 연결이 없다면 <code>git remote add origin 저장소URL</code>로 등록하고, 잘못된 주소라면 <code>git remote set-url origin 올바른URL</code>로 수정합니다. 연결 등록만으로 커밋이 업로드되지는 않습니다.</p>
+<h3>clone은 기존 저장소를 처음 가져올 때 사용합니다</h3><p>이미 1주차 저장소가 있는 컴퓨터에서는 다시 clone하지 않습니다. 새 컴퓨터에서 시작하거나 기존 프로젝트를 처음 받을 때, 프로젝트 밖의 폴더에서 다음을 실행합니다. YOUR_ID는 실제 계정 이름으로 바꿉니다.</p>
+<pre><code class="language-bash">git clone https://github.com/YOUR_ID/backend-study.git
+cd backend-study
+</code></pre>
+<p>일반적인 clone은 파일과 이력을 가져오고 origin을 등록합니다. clone 후에는 remote add origin을 다시 실행할 필요가 없습니다. ZIP 다운로드에는 Git 이력이 들어 있지 않습니다.</p>
+<h3>main과 origin/main은 어디에 있을까요?</h3><table><thead><tr><th>이름</th><th>의미</th></tr></thead><tbody><tr><td>main</td><td>내 컴퓨터의 로컬 브랜치</td></tr><tr><td>GitHub의 main</td><td>원격 저장소에 있는 브랜치</td></tr><tr><td>origin/main</td><td>내 Git이 마지막으로 확인한 원격 main의 위치</td></tr></tbody></table>
+<p><code>origin/main</code>은 내 컴퓨터에 있는 <strong>원격 추적 브랜치(remote-tracking branch)</strong>입니다. GitHub를 실시간으로 보여주지 않으므로 원격 정보를 가져와 갱신해야 합니다.</p>
+<h2 id="sync">3. fetch, pull, push는 무엇을 바꿀까요?<a class="heading-anchor" href="#sync" title="이 섹션 링크">&para;</a></h2>
+<h3>fetch: 원격의 최신 정보를 가져오기</h3>
+<pre><code class="language-bash">git fetch origin
+</code></pre>
+<p>커밋과 브랜치 정보를 가져와 origin/main 등을 갱신합니다. 현재 작업 브랜치와 작업 파일에 변경을 자동으로 합치지는 않습니다.</p>
+<pre><code class="language-bash">                 fetch 전       fetch 후
+GitHub main      A──B──C        A──B──C
+내 origin/main   A──B           A──B──C
+내 main          A──B           A──B
+</code></pre>
+<blockquote><p>“팀원이 무엇을 바꿨는지 확인한 상태입니다. 아직 내 main에 적용한 것은 아닙니다.”</p></blockquote><h3>pull: 가져온 변경을 현재 브랜치에 통합하기</h3>
+<pre><code class="language-bash">git switch main
+git pull --ff-only origin main
+</code></pre>
+<p>pull은 fetch 후 현재 브랜치에 변경을 통합합니다. 이번에는 <code>--ff-only</code>를 명시합니다. 내 main에서 원격 main으로 브랜치 위치만 앞으로 옮길 수 있을 때 업데이트하고, 양쪽 이력이 갈라졌다면 멈춥니다. 멈췄을 때는 이력을 확인하고 merge 또는 rebase를 선택해야 합니다.</p>
+<p><code>git pull --no-rebase</code>는 merge 방식, <code>git pull --rebase</code>는 rebase 방식으로 통합합니다. 옵션 없는 pull의 동작은 설정과 버전에 영향을 받으므로 수업에서는 방식을 명시합니다. <strong>작업 브랜치에서 git pull origin main을 실행하면 현재 작업 브랜치에 원격 main을 통합하려고 합니다.</strong></p>
+<h3>push: 내 커밋을 원격 브랜치로 보내기</h3>
+<pre><code class="language-bash">git push origin feature/health-route
+</code></pre>
+<p>로컬 feature/health-route의 커밋을 원격의 같은 이름 브랜치로 보냅니다. 수정만 하고 커밋하지 않은 내용은 올라가지 않습니다. push만으로 main에 합쳐지거나 PR이 자동 생성되지는 않습니다.</p>
+<h2 id="upstream">4. push -u의 upstream은 무엇일까요?<a class="heading-anchor" href="#upstream" title="이 섹션 링크">&para;</a></h2>
+<pre><code class="language-bash">git push -u origin feature/health-route
+git branch -vv
+</code></pre>
+<p><code>-u</code>는 업로드하면서 현재 로컬 브랜치가 추적할 상대 브랜치도 설정합니다. 이 상대를 <strong>upstream branch</strong>라고 합니다. 여기서는 origin/feature/health-route입니다. 일반적인 기본 설정에서는 이후 해당 브랜치에서 <code>git push</code>만 입력해도 같은 곳으로 보냅니다. 인자 없는 pull도 이 추적 관계를 사용합니다.</p>
+<p><strong>별개의 용법:</strong> fork 협업에서는 내 복사본을 origin, 원본 저장소를 upstream이라는 remote 이름으로 등록하기도 합니다. 예를 들어 <code>git remote add upstream 원본저장소URL</code>입니다. 이때 upstream은 저장소 별명이며, 브랜치의 추적 설정과는 다릅니다. 이번 개인 저장소 실습에는 추가하지 않습니다.</p>
+<p><code>git status</code>의 ahead/behind도 마지막으로 확인한 원격 추적 정보와 비교한 결과입니다. 실제 원격과 비교하려면 먼저 fetch합니다.</p>
+<h2 id="_3">5. 실습: 브랜치에서 PR까지<a class="heading-anchor" href="#_3" title="이 섹션 링크">&para;</a></h2>
+<h3 id="1">① 상태 확인 → main 최신화 → 작업 브랜치 생성</h3><p>1주차 저장소 폴더에서 진행합니다. status에 미완료 변경이 있다면 먼저 해당 작업을 커밋하는 등 정리한 뒤 진행하세요.</p>
+<pre><code class="language-bash">git status
+git switch main
+git pull --ff-only origin main
+git switch -c feature/health-route
+</code></pre>
+<p><code>switch -c</code>는 브랜치를 만들고 이동합니다. 이미 있는 브랜치로 이동할 때는 <code>git switch feature/health-route</code>처럼 -c를 빼세요.</p><h3>② README에 계획 작성 → 변경 확인 → 커밋</h3><p>README.md 끝에 다음 내용을 추가합니다. 오늘은 계획만 작성하고 서버 구현은 이후 주차에 진행합니다.</p>
+<pre><code class="language-bash">## 서버 상태 확인 계획
+
+- 요청: GET /health
+- 정상 응답: 200 OK
+- 응답 내용: {&quot;status&quot;: &quot;ok&quot;}
+</code></pre>
+<pre><code class="language-bash">git diff
+git add README.md
+git diff --staged
+git commit -m &quot;서버 상태 확인 기능 계획 추가&quot;
+</code></pre>
+<p>커밋 메시지는 무엇을 바꿨는지 알 수 있게 씁니다. <code>docs:</code>는 팀에서 선택하는 문서 변경 분류이며 Git의 필수 문법이 아닙니다. 이번 예시는 자연스러운 한국어 설명을 사용합니다. <a href="week-01.html#naming">1주차 이름 규칙</a>도 참고하세요.</p><h3>③ 내 origin에 업로드</h3>
+<pre><code class="language-bash">git push -u origin feature/health-route
+</code></pre>
+<p>GitHub에서 브랜치 선택 메뉴를 열어 feature/health-route와 main의 README를 비교합니다. 작업 브랜치에는 계획이 있고, main에는 아직 없어야 합니다.</p>
+<h3 id="2-pull-request">④ GitHub에서 Pull Request 열기</h3><p>본인 저장소의 <strong>Pull requests → New pull request</strong>로 이동합니다. <strong>base는 main, compare는 feature/health-route</strong>로 선택합니다. base는 변경을 받을 쪽, compare는 변경을 제안하는 쪽입니다.</p>
+<p>PR은 “이 변경을 검토하고 합쳐 주세요”라는 요청입니다. git pull 명령과는 다릅니다. <strong>Files changed</strong>에서 의도한 파일과 내용만 포함되는지 확인하고 설명을 작성합니다.</p>
+<pre><code class="language-bash">제목: 서버 상태 확인 기능 계획 추가
+
+변경 이유
+서버가 응답하는지 확인할 공통 경로가 필요합니다.
+
+변경 내용
+GET /health의 응답 코드와 JSON 형식을 README에 정리했습니다.
+
+확인한 내용
+README 표시와 요청·응답 설명을 확인했습니다.
+아직 서버 코드는 구현하지 않았습니다.
+</code></pre>
+<h3>⑤ 리뷰를 읽고 같은 브랜치에서 수정</h3><p>짝과 PR 링크를 공유하고 설명이 이해되는지 피드백을 받아 봅니다. 공개 저장소에서는 접근 가능한 팀원이 댓글을 남길 수 있고, 비공개 저장소는 접근 권한이 필요합니다. 이번 개인 실습은 자신의 PR을 직접 검토해도 됩니다. 자기 PR에 승인 리뷰를 남기는 대신 Files changed와 설명을 점검합니다.</p>
+<p>리뷰 예시: “정상 상태에서 응답할 JSON 예시가 있으면 구현할 때 더 명확할 것 같습니다.” 피드백을 반영해 README를 수정했다면:</p>
+<pre><code class="language-bash">git add README.md
+git commit -m &quot;상태 확인 응답 설명 보완&quot;
+git push
+</code></pre>
+<p>기존 PR에 새 커밋이 추가됩니다. 수정할 때마다 새 PR을 열 필요는 없습니다. 실제 팀에서는 검토와 자동 검사 통과 여부, 병합 권한을 확인합니다.</p>
+<h3>⑥ PR 병합 → 로컬 main 업데이트</h3><p>이번 기본 실습은 GitHub에서 <strong>Create a merge commit</strong> 방식이 허용되어 있다면 해당 방식으로 병합합니다. 저장소 설정에 따라 표시되는 방식은 다를 수 있습니다.</p>
+<pre><code class="language-bash">git switch main
+git pull --ff-only origin main
+git log --oneline --graph --decorate --all
+</code></pre>
+<p>로컬 main의 README에 계획이 보이면 완료입니다. 다음 작업은 최신 main에서 새 브랜치를 만들어 시작합니다. 작업을 마친 로컬 브랜치는 <code>git branch -d feature/health-route</code>로 삭제할 수 있습니다. squash/rebase 병합 후에는 Git이 병합 여부를 이력으로 확인하지 못해 삭제를 거절할 수 있으므로 바로 강제 삭제하지 말고 반영 여부부터 확인합니다.</p>
+<h2 id="integration">6. 작업 중 main이 바뀌었다면? — merge와 rebase<a class="heading-anchor" href="#integration" title="이 섹션 링크">&para;</a></h2>
+<p>다음은 설명용으로 같은 시작 상태를 비교한 예시입니다. 아래 두 방법을 순서대로 모두 실행하는 것이 아닙니다. 작업 브랜치에서 미완료 변경을 정리한 뒤 선택합니다.</p>
+<pre><code class="language-bash">A──B──C     origin/main
+    \ 
+     D──E   feature/example
+</code></pre>
+<h3 id="3-merge-rebase">merge: 기존 이력을 유지하며 합치기</h3>
+<pre><code class="language-bash">git fetch origin
+git merge origin/main
+</code></pre>
+<pre><code class="language-bash">A──B──C       origin/main
+    \  \ 
+     D──E──M   feature/example
+</code></pre>
+<p>이처럼 갈라진 이력을 합치면 두 부모를 가진 병합 커밋 M이 생깁니다. D와 E는 그대로입니다. 이력이 갈라지지 않았다면 새 병합 커밋 없이 fast-forward가 가능할 수도 있습니다.</p><h3>rebase: 새 기준 위에 내 변경을 다시 적용하기</h3>
+<pre><code class="language-bash">git fetch origin
+git rebase origin/main
+</code></pre>
+<pre><code class="language-bash">A──B──C       origin/main
+       \ 
+        D&#x27;──E&#x27;   feature/example
+</code></pre>
+<p>D와 E의 변경을 C 뒤에 다시 적용합니다. 부모 등이 달라져 새 커밋 D′, E′가 만들어지므로 커밋 ID도 바뀝니다. <strong>공유 브랜치의 이력을 임의로 다시 쓰면 다른 사람의 작업과 어긋납니다.</strong> 기본 실습에서는 merge를 사용하고 rebase는 개인 작업 브랜치에서 연습합니다.</p>
+<p>아직 push하지 않은 브랜치라면 rebase 후 일반 push로 올릴 수 있습니다. 이미 올린 개인 브랜치의 이력을 바꾼 경우에는 일반 push가 거절될 수 있습니다. 팀이 허용하고 원격 변경을 검토한 경우에만 <code>git push --force-with-lease origin feature/example</code>을 사용합니다. main에는 사용하지 않습니다.</p>
+<p>force-with-lease는 원격이 예상한 커밋을 가리키는지 검사합니다. 다른 사람의 변경을 자동으로 보존하지 않으며, 백그라운드 fetch가 예상 상태를 갱신할 수도 있습니다. 거절됐다고 fetch 후 무조건 재시도하지 말고 원격 변경을 먼저 확인합니다.</p>
+<h3>내 브랜치 갱신과 PR 병합은 방향이 다릅니다</h3><table><thead><tr><th>작업</th><th>방향과 목적</th></tr></thead><tbody><tr><td>작업 브랜치에서 merge/rebase origin/main</td><td>최신 main을 내 작업에 반영</td></tr><tr><td>GitHub에서 PR 병합</td><td>검토한 내 작업을 main에 반영</td></tr></tbody></table>
+<p>GitHub의 <strong>Create a merge commit</strong>은 병합 커밋으로 연결하고, <strong>Squash and merge</strong>는 PR의 변경을 하나의 커밋으로 합치며, <strong>Rebase and merge</strong>는 변경 커밋들을 base 위에 다시 적용합니다. 팀의 이력 관리 규칙에 따라 선택합니다.</p>
+<h2 id="_5">7. 실전 예제: 충돌을 직접 만들고 해결하기<a class="heading-anchor" href="#_5" title="이 섹션 링크">&para;</a></h2>
+<p>실제 작업 파일 대신 <code>conflict-practice.txt</code>를 사용하는 별도 연습 브랜치에서 진행합니다. main에는 연습 커밋을 넣지 않습니다. 아래 이름이 이미 있거나 같은 파일이 있다면 새 이름으로 바꾸세요. 시작 전 작업 폴더가 깨끗한지 확인합니다.</p><h3>① 공통 출발점 만들기</h3>
+<pre><code class="language-bash">git status
+git switch main
+git switch -c practice/conflict-base
+printf &quot;스터디 시간: 미정\n&quot; &gt; conflict-practice.txt
+git add conflict-practice.txt
+git commit -m &quot;충돌 연습의 공통 문장 추가&quot;
+</code></pre>
+<h3>② 같은 출발점에서 서로 다른 수정 만들기</h3>
+<pre><code class="language-bash">git switch -c practice/time-a
+printf &quot;스터디 시간: 수요일 오후 7시\n&quot; &gt; conflict-practice.txt
+git add conflict-practice.txt
+git commit -m &quot;수요일 스터디 시간 제안&quot;
+
+git switch practice/conflict-base
+git switch -c practice/time-b
+printf &quot;스터디 시간: 목요일 오후 8시\n&quot; &gt; conflict-practice.txt
+git add conflict-practice.txt
+git commit -m &quot;목요일 스터디 시간 제안&quot;
+
+git merge practice/time-a
+</code></pre>
+<p>마지막 명령은 의도적으로 충돌을 만듭니다. Git은 같은 줄의 어느 변경을 남길지 판단할 수 없습니다. 파일을 열면 다음과 비슷하게 보입니다.</p>
+<pre><code class="language-bash">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+스터디 시간: 목요일 오후 8시
+=======
+스터디 시간: 수요일 오후 7시
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; practice/time-a
+</code></pre>
+<h3 id="4">③ 최종 내용 결정 → add → 병합 완료</h3><p>이 merge에서 HEAD 쪽은 현재 time-b, 아래쪽은 가져오는 time-a입니다. 양쪽 의도를 확인하고 최종 시간을 결정합니다. 연습에서는 “스터디 시간: 금요일 오후 7시”로 파일 전체를 바꾸고 충돌 표시를 모두 지웁니다.</p>
+<pre><code class="language-bash">git status
+git add conflict-practice.txt
+git diff --staged
+git diff --check
+git merge --continue
+git log --oneline --graph --decorate --all
+</code></pre>
+<p>add는 해결한 최종 내용을 스테이징합니다. merge --continue에서 편집기가 열리면 병합 메시지를 저장하고 종료합니다. status에서 충돌이 사라지고 최종 문장이 맞는지 확인합니다. 코드 충돌이라면 표시 제거뿐 아니라 테스트도 필요합니다. 완료 후 <code>git switch main</code>으로 돌아옵니다.</p>
+<p>진행 중인 병합을 취소하려면 <code>git merge --abort</code>를 사용합니다. 깨끗한 작업 상태에서 시작했다면 병합 전 상태로 돌아갑니다.</p>
+<h3>rebase 중 충돌이라면?</h3><p>파일을 수정하고 add한 뒤 <code>git rebase --continue</code>를 실행합니다. 중단은 <code>git rebase --abort</code>입니다. 커밋을 하나씩 다시 적용하므로 충돌이 여러 번 생길 수 있습니다. rebase의 HEAD 쪽은 새 기준 위에 지금까지 재구성된 내용이므로 무조건 “원래 내 코드”라고 해석하지 않습니다.</p>
+<blockquote><p>“충돌은 Git이 망가졌다는 뜻이 아닙니다. 최종 결과를 사람이 판단해야 한다는 뜻입니다.”</p></blockquote>
+<h2 id="_4">8. 자주 사용하는 명령어와 용어<a class="heading-anchor" href="#_4" title="이 섹션 링크">&para;</a></h2>
+<table><thead><tr><th>명령어</th><th>하는 일</th></tr></thead><tbody>
+<tr><td><code>git status</code></td><td>현재 브랜치와 파일 상태 확인</td></tr><tr><td><code>git remote -v</code></td><td>원격 저장소 주소 확인</td></tr><tr><td><code>git branch -a</code></td><td>로컬·원격 추적 브랜치 목록 확인</td></tr><tr><td><code>git branch -vv</code></td><td>로컬 브랜치의 upstream 확인</td></tr><tr><td><code>git switch -c 브랜치명</code></td><td>새 브랜치를 만들고 이동</td></tr><tr><td><code>git fetch origin</code></td><td>원격 정보 갱신</td></tr><tr><td><code>git pull --ff-only origin main</code></td><td>원격 main을 현재 브랜치에 fast-forward로 반영</td></tr><tr><td><code>git push -u origin 브랜치명</code></td><td>업로드하고 추적 관계 설정</td></tr><tr><td><code>git log --oneline --graph --decorate --all</code></td><td>커밋과 브랜치 관계 보기</td></tr></tbody></table>
+<p>이 명령들은 GitHub 전용 명령이 아니라 Git 명령입니다. GitHub에서는 <strong>Code</strong>에서 파일·브랜치·커밋을, <strong>Pull requests</strong>에서 변경 제안과 리뷰를, PR의 <strong>Files changed</strong>에서 차이를 확인합니다. 자동 검사가 설정된 저장소라면 <strong>Checks</strong>에서 결과를 확인합니다.</p>
+<p><strong>fast-forward</strong>는 브랜치 위치만 앞으로 이동하는 방식, <strong>conflict</strong>는 자동 통합이 멈춘 상태, <strong>code review</strong>는 변경의 정확성과 이해 가능성을 함께 검토하는 과정입니다.</p>
+<h2 id="_6">9. 수업 실습과 과제<a class="heading-anchor" href="#_6" title="이 섹션 링크">&para;</a></h2>
+<ul><li>본인 origin 주소와 현재 브랜치를 확인합니다.</li><li>feature/health-route에서 README 계획을 커밋하고 push합니다.</li><li>본인 main을 대상으로 PR을 열고 변경 이유와 확인한 내용을 적습니다.</li><li>자체 검토 또는 짝 피드백을 반영한 커밋을 같은 PR에 추가합니다.</li><li>PR을 병합하고 로컬 main에서도 결과를 확인합니다.</li><li>연습 브랜치에서 충돌을 만들고 최종 문장을 결정해 해결합니다.</li></ul>
+<h3 id="_7">제출할 내용</h3><p>개인 저장소의 병합된 PR 링크와 충돌 해결 커밋 ID를 제출합니다. 충돌 연습 브랜치를 온라인으로 공유하려면 해결을 마친 뒤 <code>git push -u origin practice/time-b</code>로 올립니다. 연습 브랜치를 main으로 병합할 필요는 없습니다.</p>
+<h3 id="_8">막혔을 때 확인할 것</h3><table><thead><tr><th>상황</th><th>확인과 다음 행동</th></tr></thead><tbody><tr><td>브랜치가 이미 존재함</td><td>branch 목록을 보고 switch로 이동하거나 새 이름 선택</td></tr><tr><td>no upstream branch</td><td>현재 브랜치를 확인하고 push -u origin 브랜치명 실행</td></tr><tr><td>non-fast-forward / ff-only 실패</td><td>fetch 후 그래프를 확인하고 원격에 추가된 변경을 이해한 뒤 통합. 강제 push로 해결하지 않기</td></tr><tr><td>PR에 변경이 없음</td><td>base·compare 선택, 커밋·push 여부, 이미 병합했는지 확인</td></tr><tr><td>Authentication failed / Repository not found</td><td>remote 주소, 로그인 계정, 접근 권한 확인. 1주차 인증 안내 참고</td></tr><tr><td>CONFLICT</td><td>status로 파일 확인 → 최종 내용 결정 → add → 진행 중인 merge/rebase에 맞게 continue</td></tr></tbody></table>
+<h2 id="_9">10. 설명할 수 있으면 이해한 것: 질문과 해설<a class="heading-anchor" href="#_9" title="이 섹션 링크">&para;</a></h2>
+<details><summary>왜 main에서 바로 작업하지 않나요?</summary><p>검토 전 변경을 분리하고, 준비된 작업만 main에 반영하기 위해서입니다. 브랜치가 충돌 자체를 없애지는 않습니다.</p></details>
+<details><summary>커밋했는데 GitHub에 보이지 않는 이유는?</summary><p>커밋은 로컬 기록입니다. 올바른 원격 브랜치로 push했는지 확인합니다.</p></details>
+<details><summary>fetch했는데 내 main이 그대로인 이유는?</summary><p>fetch는 origin/main 같은 원격 추적 정보를 갱신합니다. 로컬 main에 통합하는 단계가 따로 필요합니다.</p></details>
+<details><summary>origin/main은 GitHub의 main 그 자체인가요?</summary><p>아닙니다. 내 Git이 마지막으로 확인한 원격 main의 위치입니다.</p></details>
+<details><summary>PR과 git pull은 같은 작업인가요?</summary><p>PR은 GitHub에서 변경을 검토하고 병합하도록 요청하는 기능입니다. pull은 터미널에서 원격 변경을 가져와 현재 브랜치에 통합하는 Git 명령입니다.</p></details>
+<details><summary>rebase 후 커밋 ID가 달라지는 이유는?</summary><p>새 기반 위에 변경을 다시 적용하면서 부모 등 커밋 정보가 달라지기 때문입니다.</p></details>
+<details><summary>충돌 표시만 지우면 끝인가요?</summary><p>아닙니다. 두 변경의 의도를 반영한 결과인지 확인한 뒤 add하고 통합을 완료합니다. 코드라면 테스트도 합니다.</p></details>
+<h2 id="_10">11. 공식 참고 자료<a class="heading-anchor" href="#_10" title="이 섹션 링크">&para;</a></h2>
+<ul><li><a href="https://git-scm.com/book/en/v2/Git-Branching-Remote-Branches">Pro Git — 원격 추적 브랜치와 upstream</a></li><li><a href="https://git-scm.com/docs/git-pull">Git 공식 문서 — pull과 통합 방식</a></li><li><a href="https://git-scm.com/docs/git-push">Git 공식 문서 — push와 force-with-lease</a></li><li><a href="https://docs.github.com/en/get-started/using-github/github-flow">GitHub 공식 가이드 — 브랜치와 PR 협업</a></li></ul>
+<h3 id="_11">다음 주와 연결하기</h3><p>다음 주에는 <a href="week-03.html">인터넷과 HTTP의 요청·응답</a>을 관찰합니다. 앞으로 만드는 기능도 이번 주의 브랜치 → 커밋 → push → PR → 병합 흐름으로 관리합니다.</p>
+<h2 id="practice-site">12. 마무리 연습 — Learn Git Branching<a class="heading-anchor" href="#practice-site" title="이 섹션 링크">&para;</a></h2>
+<p>브라우저에서 명령어를 입력하며 커밋 그래프와 브랜치가 어떻게 움직이는지 확인할 수 있는 연습 사이트입니다. <strong>기초의 브랜치·merge → rebase → 원격 저장소의 clone·fetch·pull·push</strong> 순서로 복습하세요.</p><p>명령을 실행하기 전에 “어느 브랜치가 어느 커밋으로 이동할까?”를 예상하고 결과와 비교해 보세요. PR 생성과 리뷰는 GitHub에서 별도로 연습합니다.</p><blockquote><p><a href="https://learngitbranching.js.org/?locale=ko">Learn Git Branching — 한국어로 직접 연습하기 →</a></p></blockquote></article>
+      <nav class="pager" aria-label="이전 및 다음 문서"><a class="pager-link previous" href="week-01.html"><span>이전</span><strong>Week 01 · Git & GitHub I</strong></a><a class="pager-link next" href="week-03.html"><span>다음</span><strong>Week 03 · HTTP/HTTPS 1탄</strong></a></nav>
+      <footer class="document-footer">
+        <span>2026 Fall Backend Study</span>
+        <a href="index.html">전체 커리큘럼으로</a>
+      </footer>
+    </div>
+  </main>
+  <script>
+(() => {
+  const root = document.documentElement;
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem("backend-study-theme");
+  } catch {
+    // Some browsers restrict storage for files opened directly from disk.
+  }
+  const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = savedTheme || (preferredDark ? "dark" : "light");
+
+  document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem("backend-study-theme", next);
+    } catch {
+      // The current page still changes theme even when storage is unavailable.
+    }
+  });
+
+  const sidebar = document.querySelector(".sidebar");
+  const menuToggle = document.querySelector(".menu-toggle");
+  menuToggle?.addEventListener("click", () => {
+    const isOpen = sidebar?.classList.toggle("open") ?? false;
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (window.innerWidth > 900 || !sidebar?.classList.contains("open")) return;
+    if (sidebar.contains(event.target) || menuToggle?.contains(event.target)) return;
+    sidebar.classList.remove("open");
+    menuToggle?.setAttribute("aria-expanded", "false");
+  });
+
+  document.querySelectorAll("pre").forEach((block) => {
+    const button = document.createElement("button");
+    button.className = "copy-code";
+    button.type = "button";
+    button.textContent = "COPY";
+    button.setAttribute("aria-label", "코드 복사");
+    button.addEventListener("click", async () => {
+      const code = block.querySelector("code")?.textContent ?? "";
+      let copied = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+          copied = true;
+        }
+      } catch {
+        copied = false;
+      }
+      if (!copied) {
+        const textarea = document.createElement("textarea");
+        textarea.value = code;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.append(textarea);
+        textarea.select();
+        copied = document.execCommand("copy");
+        textarea.remove();
+      }
+      button.textContent = copied ? "COPIED" : "SELECT & COPY";
+      window.setTimeout(() => (button.textContent = "COPY"), 1200);
+    });
+    block.append(button);
+  });
+
+  const progressBar = document.querySelector(".reading-progress span");
+  const updateProgress = () => {
+    const distance = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = distance > 0 ? (window.scrollY / distance) * 100 : 0;
+    if (progressBar) progressBar.style.width = `${Math.min(100, progress)}%`;
+  };
+  document.addEventListener("scroll", updateProgress, { passive: true });
+  updateProgress();
+
+  const diagrams = document.querySelectorAll(".mermaid");
+  if (diagrams.length) {
+    import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs")
+      .then(({ default: mermaid }) => {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: root.dataset.theme === "dark" ? "dark" : "neutral",
+          securityLevel: "strict",
+          fontFamily: "system-ui, sans-serif",
+        });
+        return mermaid.run({ nodes: diagrams });
+      })
+      .catch(() => {
+        diagrams.forEach((diagram) => diagram.classList.add("mermaid-unavailable"));
+      });
+  }
+})();
+
+  </script>
+</body>
+</html>

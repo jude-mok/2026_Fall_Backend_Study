@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="2026 LikeLion Backend Study — Python과 FastAPI로 배우는 14주 백엔드 커리큘럼">
+  <title>Week 01 — Git &amp; GitHub I: 변경을 기록하는 법 · LikeLion Backend Study</title>
+  <style>
+:root {
+  color-scheme: light;
+  --paper: #f4f1e8;
+  --paper-raised: #fffdf7;
+  --ink: #16211d;
+  --muted: #68736d;
+  --line: #c9cec8;
+  --accent: #ff5c35;
+  --accent-soft: #ffe1d7;
+  --forest: #123b2e;
+  --code: #11201b;
+  --code-ink: #e7f5ec;
+  --sidebar-width: 292px;
+  --content-width: 850px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #101713;
+  --paper-raised: #17201b;
+  --ink: #edf4ef;
+  --muted: #a9b5ae;
+  --line: #35423b;
+  --accent: #ff7959;
+  --accent-soft: #4a291f;
+  --forest: #b9efcf;
+  --code: #09100d;
+  --code-ink: #dff4e6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Pretendard, "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+  line-height: 1.78;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -5rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  display: flex;
+  width: var(--sidebar-width);
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.brand-block {
+  padding: 2rem 1.65rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: block;
+  text-decoration: none;
+}
+
+.brand span,
+.page-meta,
+.sidebar-footer,
+.pager-link span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.brand span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.brand strong {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+
+.brand-block p {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.week-nav {
+  display: grid;
+  padding: 0.8rem;
+  gap: 0.18rem;
+}
+
+.week-nav a {
+  display: grid;
+  grid-template-columns: 4.7rem 1fr;
+  align-items: baseline;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  text-decoration: none;
+}
+
+.week-nav a:hover {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.week-nav a.active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: var(--paper-raised);
+}
+
+[data-theme="dark"] .week-nav a.active {
+  background: #234b3b;
+  color: #f7fff9;
+}
+
+.week-nav span {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+}
+
+.week-nav a.active span {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.week-nav strong {
+  font-size: 0.77rem;
+  font-weight: 650;
+}
+
+.sidebar-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 1rem 1.55rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.theme-toggle,
+.menu-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.theme-toggle:hover,
+.menu-toggle:hover {
+  color: var(--accent);
+}
+
+main {
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+}
+
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto var(--sidebar-width);
+  z-index: 30;
+  height: 3px;
+  background: transparent;
+}
+
+.reading-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+}
+
+.article-shell {
+  width: min(calc(100% - 3rem), var(--content-width));
+  margin: 0 auto;
+  padding: 4.3rem 0 3rem;
+}
+
+.page-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3.8rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+article > h1:first-child {
+  max-width: 790px;
+  margin: 0 0 3.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-weight: 600;
+  letter-spacing: -0.064em;
+  line-height: 0.98;
+}
+
+.overview article > h1:first-child {
+  font-size: clamp(3.25rem, 7.3vw, 6.75rem);
+}
+
+article > p:nth-child(2) {
+  color: var(--muted);
+}
+
+h2 {
+  margin: 4.8rem 0 1.45rem;
+  padding-top: 1.2rem;
+  border-top: 3px solid var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+h3 {
+  margin: 3rem 0 0.8rem;
+  color: var(--forest);
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+h4 {
+  margin: 2rem 0 0.5rem;
+}
+
+.heading-anchor {
+  margin-left: 0.35rem;
+  color: var(--line);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h2:hover .heading-anchor,
+h3:hover .heading-anchor,
+.heading-anchor:focus {
+  opacity: 1;
+}
+
+p,
+li {
+  font-size: 1rem;
+}
+
+strong {
+  font-weight: 750;
+}
+
+blockquote {
+  margin: 2rem 0;
+  padding: 1.25rem 1.5rem;
+  border: 0;
+  border-left: 5px solid var(--accent);
+  background: var(--accent-soft);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+}
+
+blockquote p {
+  margin: 0;
+  font-size: inherit;
+}
+
+ul,
+ol {
+  padding-left: 1.35rem;
+}
+
+li + li {
+  margin-top: 0.35rem;
+}
+
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.45rem;
+  accent-color: var(--accent);
+  vertical-align: -0.12rem;
+}
+
+table {
+  display: table;
+  width: 100%;
+  margin: 1.75rem 0 2.5rem;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  padding: 0.75rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  border-bottom: 2px solid var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+code {
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+p code,
+li code,
+td code {
+  padding: 0.13em 0.35em;
+}
+
+pre {
+  position: relative;
+  margin: 1.7rem 0 2.2rem;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--code-ink) 15%, transparent);
+  border-radius: 0.45rem;
+  background: var(--code);
+  color: var(--code-ink);
+  box-shadow: 0 1.2rem 2.5rem rgb(10 22 16 / 10%);
+}
+
+pre code {
+  display: block;
+  min-width: max-content;
+  padding: 1.35rem 1.45rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.copy-code {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 0.25rem;
+  background: rgb(0 0 0 / 28%);
+  color: #dce9e1;
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+}
+
+.mermaid {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 2rem 0 2.5rem;
+  overflow-x: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  background: var(--paper-raised);
+  text-align: center;
+}
+
+.pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 6rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.pager-link {
+  display: flex;
+  min-height: 7.5rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.2rem;
+  text-decoration: none;
+}
+
+.pager-link + .pager-link {
+  border-left: 1px solid var(--line);
+}
+
+.pager-link.next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.pager-link:hover {
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.pager-link span {
+  color: var(--accent);
+  font-size: 0.65rem;
+}
+
+.pager-link strong {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.document-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper-raised) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .mobile-brand {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+
+  .menu-toggle {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 0.25rem;
+    font-size: 0.72rem;
+  }
+
+  .sidebar {
+    top: 3.5rem;
+    width: min(88vw, 330px);
+    transform: translateX(-102%);
+    box-shadow: 1rem 0 2rem rgb(0 0 0 / 16%);
+    transition: transform 180ms ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  main {
+    margin-left: 0;
+  }
+
+  .reading-progress {
+    left: 0;
+  }
+
+  .article-shell {
+    width: min(calc(100% - 2rem), var(--content-width));
+    padding-top: 2.2rem;
+  }
+
+  .page-meta {
+    margin-bottom: 2.5rem;
+  }
+}
+
+@media (max-width: 620px) {
+  article > h1:first-child {
+    margin-bottom: 2.6rem;
+    font-size: 2.65rem;
+  }
+
+  .overview article > h1:first-child {
+    font-size: 3.15rem;
+  }
+
+  h2 {
+    margin-top: 3.8rem;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .page-meta span:last-child {
+    display: none;
+  }
+
+  .pager {
+    grid-template-columns: 1fr;
+  }
+
+  .pager-link.next {
+    grid-column: 1;
+  }
+
+  .pager-link + .pager-link {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .document-footer {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
+@media print {
+  .sidebar,
+  .mobile-header,
+  .reading-progress,
+  .pager,
+  .copy-code {
+    display: none !important;
+  }
+
+  main {
+    margin: 0;
+  }
+
+  .article-shell {
+    width: 100%;
+    padding: 0;
+  }
+}
+
+
+.lesson-toc, details { padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: .4rem; background: var(--paper-raised); margin: 1rem 0; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .75rem; padding: 1.25rem; border: 1px solid var(--line); }
+.flow span { padding: .7rem; background: var(--paper-raised); text-align: center; }
+.flow b { font-size: .8rem; color: var(--muted); }
+h2, h3 { scroll-margin-top: 4.5rem; }
+article { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="lesson">
+  <a class="skip-link" href="#content">본문으로 건너뛰기</a>
+  <header class="mobile-header">
+    <a class="mobile-brand" href="index.html">LIKELION / BACKEND</a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">목차</button>
+  </header>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-block">
+      <a class="brand" href="index.html"><span>LIKELION</span><strong>BACKEND<br>STUDY</strong></a>
+      <p>Python · FastAPI · PostgreSQL</p>
+    </div>
+    <nav class="week-nav" aria-label="커리큘럼"><a href="index.html"><span>Overview</span><strong>14주 전체 로드맵</strong></a>
+<a href="week-01.html" aria-current="page" class="active"><span>Week 01</span><strong>Git & GitHub I</strong></a>
+<a href="week-02.html"><span>Week 02</span><strong>Git & GitHub II</strong></a>
+<a href="week-03.html"><span>Week 03</span><strong>HTTP/HTTPS 1탄</strong></a>
+<a href="week-04.html"><span>Week 04</span><strong>HTTP/HTTPS 2탄</strong></a>
+<a href="week-05.html"><span>Week 05</span><strong>REST API</strong></a>
+<a href="week-06.html"><span>Week 06</span><strong>Local DB &amp; API 조회</strong></a>
+<a href="week-07.html"><span>Week 07</span><strong>User CRUD &amp; Validation</strong></a>
+<a href="week-08.html"><span>Week 08</span><strong>Backend Layers</strong></a>
+<a href="week-09.html"><span>Week 09</span><strong>Database II</strong></a>
+<a href="week-10.html"><span>Week 10</span><strong>Docker & DB</strong></a>
+<a href="week-11.html"><span>Week 11</span><strong>SQLAlchemy ORM</strong></a>
+<a href="week-12.html"><span>Week 12</span><strong>Authentication I</strong></a>
+<a href="week-13.html"><span>Week 13</span><strong>Authentication II</strong></a>
+<a href="week-14.html"><span>Week 14</span><strong>Final Integration</strong></a></nav>
+    <div class="sidebar-footer">
+      <span>2026 FALL</span>
+      <button class="theme-toggle" type="button" aria-label="색상 테마 전환">LIGHT / DARK</button>
+    </div>
+  </aside>
+  <main id="content">
+    <div class="reading-progress" aria-hidden="true"><span></span></div>
+    <div class="article-shell">
+      <div class="page-meta"><span>WEEK 01 · 14</span><span>PYTHON 3.13 · FASTAPI</span></div>
+      <article><h1 id="week-01-git-github-i">Week 01 — Git &amp; GitHub I: 변경을 기록하는 법</h1>
+<p>파일 저장부터 첫 GitHub 업로드까지. 각자 개인 저장소를 만들고 따라 하는 초보자용 실습입니다. <a href="index.html">전체 커리큘럼</a> · <a href="week-02.html">다음 주: 브랜치와 협업</a></p>
+<nav class="lesson-toc" aria-label="1주차 본문 목차"><strong>학습 순서</strong><ol><li><a href="#goals">오늘의 목표</a></li><li><a href="#why">Git이 필요한 이유</a></li><li><a href="#setup">실습 준비</a></li><li><a href="#model">세 가지 상태</a></li><li><a href="#lab">첫 커밋 실습</a></li><li><a href="#experiment">add 후 다시 수정하면?</a></li><li><a href="#ignore">제외할 파일과 복구</a></li><li><a href="#remote">GitHub에 공유하기</a></li><li><a href="#naming">실무 이름 규칙</a></li><li><a href="#practice">선택 실습</a></li><li><a href="#troubleshooting">오류 해결</a></li><li><a href="#quiz">이해 확인과 해설</a></li><li><a href="#references">공식 참고 자료</a></li></ol></nav>
+<h2 id="goals">0. 오늘 어디까지 할까요?<a class="heading-anchor" href="#goals" title="이 섹션 링크">&para;</a></h2>
+<p>오늘의 결과물은 <strong>README와 .gitignore가 있고, 의미 있는 커밋이 4개 이상 기록된 개인 연습 저장소</strong>입니다. Python이나 FastAPI 실행은 아직 필요하지 않습니다. 브랜치 분기, PR, merge와 rebase는 2주차에서 배웁니다.</p>
+<ul><li>저장·add·commit·push가 각각 무엇을 바꾸는지 말할 수 있다.</li><li>status를 읽고 다음 행동을 결정할 수 있다.</li><li>커밋 전에 포함될 내용을 확인하고, 잘못 선택한 파일을 제외할 수 있다.</li><li>GitHub에서 업로드된 파일과 커밋을 확인할 수 있다.</li></ul>
+<p>설치와 GitHub 로그인은 미리 준비하세요. 실습은 자기 속도에 맞춰 진행하고 선택 실습은 복습할 때 해도 됩니다.</p>
+<h3>실습 운영: 내 레포에서 만들고, 참고 답안과 비교하기</h3>
+<p>각자 본인 GitHub 계정에 <code>backend-study</code> 저장소를 새로 만들고 14주 동안 이어서 사용합니다. 파일 작성, commit, push는 모두 본인의 저장소에서 진행합니다. 같은 이름이어도 계정이 다르면 별개의 저장소입니다.</p>
+<p><a href="https://github.com/jude-mok/2026_Fall_Backend_Study">Jude의 GitHub — 참고 답안 저장소</a>는 설명과 구현 예시를 확인하는 곳입니다. 이번 실습은 이 저장소를 fork하거나 clone해서 제출하는 방식이 아니라, 빈 개인 저장소에서 직접 시작합니다. 공동 저장소의 collaborator 등록이나 참고 답안 저장소로의 push·PR 제출은 필요하지 않습니다.</p>
+<ol><li>먼저 해당 주차의 설명을 읽고 개인 레포에서 직접 구현합니다.</li><li>막히면 참고 답안의 관련 파일과 변경 이유를 비교합니다. 최신 코드는 이후 주차 내용을 포함할 수 있으므로 지금 배우는 범위부터 확인합니다.</li><li>자기 결과를 확인한 뒤 본인 말로 커밋 메시지를 적고 개인 레포에 push합니다.</li><li>참고 답안과 자신의 결과를 비교해 봅니다. 코드나 커밋 ID가 같을 필요는 없습니다.</li></ol>
+<h2 id="why">1. Git은 어떤 문제를 해결할까요?<a class="heading-anchor" href="#why" title="이 섹션 링크">&para;</a></h2>
+<p>README_최종.md, README_진짜최종.md처럼 복사본을 늘리면 어느 버전이 맞는지, 왜 바꿨는지 알기 어렵습니다. Git은 원하는 시점의 파일 상태에 설명을 붙여 기록합니다. 나중에 이전 내용을 확인하거나 두 시점의 차이를 비교할 수 있습니다.</p>
+<table><thead><tr><th>이름</th><th>하는 일</th><th>예시</th></tr></thead><tbody><tr><td>Git</td><td>내 컴퓨터에서 파일의 버전을 관리하는 도구</td><td>인터넷 없이도 커밋하고 이력 보기</td></tr><tr><td>GitHub</td><td>Git 저장소를 온라인에 보관하고 협업하는 서비스</td><td>다른 사람이 내 커밋을 보고 리뷰하기</td></tr><tr><td>저장소(repository)</td><td>Git이 버전 관리를 하는 프로젝트</td><td>일반적인 로컬 저장소는 작업 파일과 숨김 .git 폴더로 구성</td></tr></tbody></table>
+<p><code>.git</code>에는 이력과 설정 등이 들어 있습니다. 일반 폴더를 만들었다고 Git 저장소가 되는 것은 아닙니다. <code>git init</code>으로 관리 정보를 만들어야 합니다. 실습 중 .git을 직접 편집하거나 삭제하지 마세요.</p>
+<h2 id="setup">2. 처음이라면 여기부터: 실습 준비<a class="heading-anchor" href="#setup" title="이 섹션 링크">&para;</a></h2>
+<p>준비물: Git, 텍스트 편집기(예: VS Code), GitHub 계정. macOS는 터미널, Windows는 Git 설치에 포함된 <strong>Git Bash</strong>를 사용하세요. 아래 파일 생성 명령은 Bash/Zsh 기준이며 PowerShell에서는 그대로 동작하지 않을 수 있습니다. 설치는 <a href="https://git-scm.com/downloads">Git 공식 설치 안내</a>를 따르세요.</p>
+<pre><code class="language-bash">git --version
+</code></pre>
+<p><code>git version 2.x.x</code>처럼 버전이 나오면 준비되었습니다. 이 문서는 <code>git init -b</code>를 지원하는 Git 2.28 이상을 전제로 합니다.</p>
+<table><thead><tr><th>터미널 기초</th><th>뜻</th></tr></thead><tbody><tr><td>pwd</td><td>현재 위치를 확인한다.</td></tr><tr><td>ls</td><td>현재 폴더의 파일 목록을 본다.</td></tr><tr><td>mkdir 폴더이름</td><td>새 폴더를 만든다.</td></tr><tr><td>cd 폴더이름</td><td>해당 폴더로 이동한다. cd ..은 상위 폴더로 간다.</td></tr><tr><td>명령 실행</td><td>한 줄 입력 후 Enter. 예제에는 $ 같은 프롬프트 표시를 입력하지 않는다.</td></tr></tbody></table>
+<p>편집기에서 파일을 고쳤다면 먼저 저장하세요. Git은 디스크에 저장된 내용을 읽습니다. 아래 실습은 <strong>이 스터디 프로젝트 밖의 새 연습 폴더</strong>에서 합니다. 파일 탐색기로 원하는 상위 폴더를 열고 그 위치에서 터미널을 여세요. 같은 이름의 폴더가 있으면 다른 이름을 사용하세요.</p>
+<pre><code class="language-bash">mkdir backend-study
+cd backend-study
+git init -b main
+git status
+</code></pre>
+<p>예상 결과: <code>On branch main</code>, <code>No commits yet</code>. main은 현재 작업하는 브랜치 이름이며 아직 첫 커밋이 없습니다. Git의 표시 언어에 따라 문구는 달라질 수 있습니다.</p>
+<p>다음은 커밋에 남길 작성자 정보입니다. 예시 이름과 이메일을 본인 정보로 바꾸세요. 이 실습에서는 이 저장소에만 설정합니다. GitHub 이메일 공개가 싫다면 계정의 이메일 설정에 표시된 noreply 주소를 사용하세요.</p>
+<pre><code class="language-bash">git config user.name &quot;Your Name&quot;
+git config user.email &quot;you@example.com&quot;
+git config --get user.name
+git config --get user.email
+</code></pre>
+<p>이름·이메일 설정은 <strong>GitHub 로그인이나 권한 부여가 아닙니다.</strong> 컴퓨터 전체의 기본값으로 만들 때는 --global 옵션을 쓰지만, 수업에서는 기존 설정을 바꾸지 않아도 됩니다. <a href="https://docs.github.com/en/get-started/git-basics/set-up-git">GitHub 설정 안내</a></p>
+<h2 id="model">3. 저장·선택·기록을 구분하기<a class="heading-anchor" href="#model" title="이 섹션 링크">&para;</a></h2>
+<p>보고서를 작성하고, 제출할 버전을 골라, 제출 기록을 남긴다고 생각해 보세요. 이 비유에서 중요한 것은 <strong>편집 중인 내용과 제출 후보가 서로 다를 수 있다</strong>는 점입니다.</p>
+<table><thead><tr><th>위치</th><th>담고 있는 것</th><th>바꾸는 행동</th></tr></thead><tbody><tr><td>작업 디렉터리(working tree)</td><td>지금 디스크에 저장된 파일</td><td>편집하고 저장</td></tr><tr><td>스테이징 영역(index)</td><td>다음 커밋에 사용할 파일 상태</td><td>git add 파일명</td></tr><tr><td>로컬 커밋 이력</td><td>선택한 상태와 작성자·메시지·부모 등의 기록</td><td>git commit -m "설명"</td></tr><tr><td>GitHub 원격 저장소</td><td>전송한 커밋과 브랜치</td><td>git push</td></tr></tbody></table>
+<div class="flow" role="img" aria-label="파일 편집 및 저장, git add로 스테이징, git commit으로 로컬 이력 기록, git push로 원격 공유"><span>편집·저장<br><strong>작업 파일</strong></span><b>→ add →</b><span><strong>스테이징</strong></span><b>→ commit →</b><span><strong>로컬 이력</strong></span><b>→ push →</b><span><strong>원격 이력</strong></span></div>
+<p>커밋은 선택된 변경을 반영한 <strong>프로젝트의 추적 대상 파일 전체 상태</strong>를 가리킵니다. 수정한 파일만 들어 있는 압축파일이라는 뜻은 아닙니다. 변경되지 않은 내용은 재사용하며, 이전 커밋은 그대로 남습니다. <a href="https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F">Pro Git의 스냅샷 설명</a></p>
+<p>HEAD는 현재 위치를 나타냅니다. 이 실습에서는 HEAD → main → 최신 커밋으로 이어집니다. 첫 커밋 전에는 main이라는 이름은 준비되어 있지만 아직 가리킬 커밋은 없습니다.</p>
+<h2 id="lab">4. 손으로 따라 하는 첫 커밋<a class="heading-anchor" href="#lab" title="이 섹션 링크">&para;</a></h2>
+<h3>4-1. README를 만들고 상태 보기</h3>
+<pre><code class="language-bash">printf &#x27;# Backend Study\n&#x27; &gt; README.md
+git status
+git diff
+</code></pre>
+<p><code>printf</code>는 글자를 출력하고, <code>\n</code>은 줄바꿈입니다. <code>&gt;</code>는 파일을 만들거나 기존 내용을 덮어씁니다. 이후에 나오는 <code>&gt;&gt;</code>는 끝에 덧붙입니다. 편집기에서 같은 내용을 작성하고 저장해도 됩니다.</p>
+<p>README.md는 프로젝트 안내문이며 .md는 Markdown 문서라는 뜻입니다. status에는 <code>Untracked files</code> 아래 README.md가 나옵니다. 아직 추적 대상으로 등록되지 않은 새 파일은 일반 <code>git diff</code>에 내용이 나오지 않습니다. 출력이 없다고 변경이 없는 것은 아닙니다.</p>
+<h3>4-2. 다음 커밋 후보에 넣기</h3>
+<pre><code class="language-bash">git add README.md
+git status
+git diff --staged
+</code></pre>
+<p>status에는 <code>Changes to be committed</code>와 <code>new file: README.md</code>가 나옵니다. <code>--staged</code> 결과에 <code>+# Backend Study</code>가 보이면 후보에 첫 줄이 들어간 것입니다. 첫 커밋 전에는 마지막 커밋이 없으므로 staged diff는 준비된 전체 내용을 보여 줍니다.</p>
+<h3>4-3. 이유를 붙여 기록하기</h3>
+<pre><code class="language-bash">git commit -m &quot;docs: add study introduction&quot;
+git status
+git log --oneline
+</code></pre>
+<p><code>-m</code> 뒤 따옴표 안은 커밋 메시지입니다. 성공하면 커밋 ID와 메시지가 출력되고 status에는 <code>nothing to commit, working tree clean</code>이 나옵니다. log 첫 부분의 짧은 영숫자는 커밋 식별자라 사람마다 다릅니다. clean은 미기록 변경이 없다는 뜻이지 GitHub 업로드 완료라는 뜻은 아닙니다.</p>
+<h3>4-4. 한 번 더 반복하기</h3>
+<pre><code class="language-bash">printf &#x27;\nGoal: learn backend fundamentals.\n&#x27; &gt;&gt; README.md
+git diff
+git add README.md
+git diff --staged
+git commit -m &quot;docs: describe study goal&quot;
+git log --oneline
+</code></pre>
+<p>성공 기준: 커밋 2개가 최신순으로 보입니다. 긴 출력 화면에서 빠져나오지 못하면 <code>q</code>를 누르세요.</p>
+<table><thead><tr><th>명령</th><th>비교/관찰 대상</th><th>언제 쓰나</th></tr></thead><tbody><tr><td>git status</td><td>파일별 변경 상태</td><td>현재 상황부터 파악할 때</td></tr><tr><td>git diff</td><td>스테이징 → 작업 파일 차이</td><td>아직 선택하지 않은 수정 확인</td></tr><tr><td>git diff --staged</td><td>마지막 커밋 → 스테이징 차이</td><td>이번 커밋에 반영될 변경 확인</td></tr><tr><td>git log --oneline</td><td>커밋 이력</td><td>이미 기록한 작업 확인</td></tr></tbody></table>
+<p>diff의 <code>-</code>는 비교 기준 쪽에 있던 줄, <code>+</code>는 새 쪽에 있는 줄입니다. 수정은 보통 삭제와 추가로 표현됩니다. <code>@@</code>는 변경 구간의 줄 번호 정보이며 오류 표시가 아닙니다. <a href="https://git-scm.com/docs/git-diff">git diff 문서</a></p>
+<h2 id="experiment">5. 가장 중요한 실험: add 뒤에 다시 수정하면?<a class="heading-anchor" href="#experiment" title="이 섹션 링크">&para;</a></h2>
+<p>지금부터는 명령을 실행하기 전에 결과를 예상해 보세요. 앞의 커밋 2개가 있는 깨끗한 상태에서 시작합니다.</p>
+<pre><code class="language-bash">printf &#x27;\nStack: Python\n&#x27; &gt;&gt; README.md
+git add README.md
+printf &#x27;Framework: FastAPI\n&#x27; &gt;&gt; README.md
+git status --short
+git diff
+git diff --staged
+</code></pre>
+<p>예상 status: <code>MM README.md</code>. 첫 M은 마지막 커밋과 스테이징이 다르다는 뜻, 둘째 M은 스테이징과 작업 파일이 다르다는 뜻입니다. 같은 파일이 staged와 unstaged에 동시에 나오는 것은 정상입니다. <a href="https://git-scm.com/docs/git-status">status 표시 규칙</a></p>
+<table><thead><tr><th>시점</th><th>작업 파일의 추가 내용</th><th>스테이징의 추가 내용</th></tr></thead><tbody><tr><td>Python 작성 후 add</td><td>Stack: Python</td><td>Stack: Python</td></tr><tr><td>FastAPI를 추가로 저장</td><td>Stack: Python + Framework: FastAPI</td><td>Stack: Python만 있음</td></tr></tbody></table>
+<details><summary>예상해 보기: 지금 커밋하면 FastAPI도 기록될까요?</summary><p>아니요. 일반적인 git commit -m은 스테이징에 준비한 내용을 기록하므로 Python 줄만 새로 기록됩니다. add는 이후 편집을 실시간으로 따라가지 않습니다. FastAPI까지 넣으려면 다시 add해야 합니다.</p></details>
+<pre><code class="language-bash">git commit -m &quot;docs: choose Python stack&quot;
+git show HEAD:README.md
+git diff
+</code></pre>
+<p><code>git show HEAD:README.md</code>는 최신 커밋 속 파일을 읽습니다. 여기에는 FastAPI 줄이 없고, 작업 파일에는 남아 있어 diff에 표시됩니다. 실제 파일이 삭제된 것이 아닙니다. 확인했으면 남은 수정도 기록하세요.</p>
+<pre><code class="language-bash">git add README.md
+git diff --staged
+git commit -m &quot;docs: choose FastAPI framework&quot;
+git status
+</code></pre>
+<p>성공 기준: 커밋이 4개이며 상태가 clean입니다. <strong>add는 실행한 시점의 내용을 선택한다</strong>는 규칙으로 이 실험 전체를 설명할 수 있어야 합니다. <a href="https://git-scm.com/docs/git-add">git add 공식 동작</a></p>
+<h2 id="ignore">6. 기록하지 않을 파일과 잘못된 선택 되돌리기<a class="heading-anchor" href="#ignore" title="이 섹션 링크">&para;</a></h2>
+<p>백엔드 프로젝트에는 비밀번호가 담긴 .env, 재설치 가능한 가상환경 .venv, 실행 중 생기는 캐시가 있습니다. 다음은 Python 프로젝트용 예시입니다. 이 실습의 .env에는 실제 비밀번호를 넣지 않습니다.</p>
+<pre><code class="language-bash">printf &#x27;DEMO_KEY=not-a-real-secret\n&#x27; &gt; .env
+git add .env
+git status --short
+git restore --staged .env
+git status --short
+</code></pre>
+<p>앞 실습처럼 <strong>첫 커밋이 이미 존재하는 상태</strong>에서 실행합니다. 결과는 <code>A  .env</code>에서 <code>?? .env</code>로 바뀝니다. 후보에서만 빠졌고 디스크 파일은 남습니다. 첫 커밋 전에는 HEAD가 없어 같은 restore 명령이 실패할 수 있습니다.</p>
+<pre><code class="language-bash">printf &#x27;.venv/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n.env\n.env.*\n!.env.example\n*.log\n&#x27; &gt; .gitignore
+printf &#x27;DEMO_KEY=replace-me\n&#x27; &gt; .env.example
+git check-ignore -v .env
+git status --short
+git add .gitignore .env.example
+git diff --staged
+git commit -m &quot;chore: ignore local files and add config template&quot;
+</code></pre>
+<p><code>check-ignore -v</code>는 어떤 규칙이 파일을 제외하는지 보여 줍니다. status에는 .env가 안 보이고 .gitignore와 .env.example만 후보가 되어야 합니다. <code>!</code>는 예외 규칙이라 .env.example은 공유할 수 있습니다. .env.example에는 필요한 항목 이름과 가짜 예시값만 적습니다.</p>
+<p>.gitignore는 이미 추적 중인 파일에는 소급 적용되지 않습니다. 이미 추적한 일반 파일은 <code>git rm --cached 파일명</code>으로 추적에서 제외한 뒤 그 변경을 커밋할 수 있습니다. 디스크 파일은 남지만 과거 커밋은 지워지지 않습니다. 실제 비밀값을 커밋·공유했다면 키를 폐기·교체하고 이력 정리도 별도로 해야 합니다. <a href="https://git-scm.com/docs/gitignore">gitignore 문서</a></p>
+<table><thead><tr><th>원하는 결과</th><th>명령</th><th>작업 파일</th></tr></thead><tbody><tr><td>커밋 후보에서만 빼기(커밋 존재 시)</td><td>git restore --staged 파일명</td><td>유지됨</td></tr><tr><td>추적 파일의 미선택 수정을 버리기</td><td>git restore 파일명</td><td>스테이징 내용으로 덮어씀. 해당 수정이 사라짐</td></tr></tbody></table>
+<p>두 명령은 결과가 다릅니다. 수정 내용을 보존하려면 <code>--staged</code>를 빼먹지 마세요. <a href="https://git-scm.com/docs/git-restore">restore의 대상과 기본 원본</a></p>
+<h2 id="remote">7. 내 기록을 GitHub에 공유하기<a class="heading-anchor" href="#remote" title="이 섹션 링크">&para;</a></h2>
+<p>여기까지의 커밋은 전부 내 컴퓨터에 있습니다. GitHub 저장소를 만들고 연결해야 온라인으로 공유할 수 있습니다. <code>origin</code>은 원격 주소의 별명이고 <code>main</code>은 브랜치 이름입니다.</p>
+<ol><li>GitHub에 로그인하고 새 저장소 만들기(New repository)를 엽니다.</li><li>이름을 backend-study로 정하고 공개 범위를 선택합니다.</li><li>이번에는 README, .gitignore, license를 자동 생성하지 않는 <strong>빈 저장소</strong>로 만듭니다. 로컬에 이미 이력이 있기 때문입니다.</li><li><strong>본인 계정에 생성된 저장소</strong>의 HTTPS 주소를 복사합니다. 아래 YOUR-USERNAME을 실제 계정명으로 바꾸거나 복사한 주소 전체를 사용합니다.</li></ol>
+<pre><code class="language-bash">git remote add origin https://github.com/YOUR-USERNAME/backend-study.git
+git remote -v
+git push -u origin main
+</code></pre>
+<p><strong>push 전 확인:</strong> <code>git remote -v</code>의 주소가 본인 계정의 <code>backend-study</code>인지 확인하세요. 참고 답안의 <code>jude-mok/2026_Fall_Backend_Study</code>를 origin으로 입력하지 않습니다.</p>
+<p><code>remote add</code>는 주소만 등록합니다. <code>push</code>는 필요한 커밋을 전송하고 원격 브랜치를 갱신합니다. <code>-u</code>는 이후 push 등의 기준이 될 upstream 연결을 설정합니다. 이후 같은 브랜치에서는 일반적으로 <code>git push</code>만으로 올릴 수 있습니다.</p>
+<p>HTTPS 인증 창이 뜨면 설정된 자격 증명 도구의 로그인 절차를 따릅니다. GitHub 계정 비밀번호를 터미널에 넣는 방식은 지원되지 않습니다. 필요하면 Git Credential Manager 또는 개인 액세스 토큰을 사용하세요. 토큰은 문서·명령 예시·스크린샷에 남기지 않습니다. <a href="https://docs.github.com/en/get-started/git-basics/set-up-git">공식 인증 설정 안내</a></p>
+<p>성공 기준: GitHub 페이지를 새로고침하면 README 내용과 커밋 목록이 보이고 .env는 없어야 합니다. 로컬에서 <code>git log -1 --oneline</code>으로 본 최신 ID와 GitHub 최신 커밋의 ID를 비교하세요. 참고: <a href="https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github">기존 로컬 저장소 업로드</a></p>
+<h3>다른 사람이 이미 만든 저장소라면?</h3>
+<p>처음부터 만드는 이번 실습은 init을 사용했습니다. 기존 저장소를 받아 시작할 때는 프로젝트 밖의 폴더에서 <code>git clone 저장소URL</code>을 사용합니다. clone은 파일과 이력을 가져오고 보통 origin도 설정합니다. ZIP 다운로드에는 Git 이력이 포함되지 않습니다. clone한 폴더에서 다시 remote add origin을 할 필요는 없습니다. 이 내용은 개념 참고이며 이번 개인 레포 실습에서는 앞의 init 방식으로 진행합니다.</p>
+<h2 id="naming">8. 실무에서 쓰는 Naming Convention<a class="heading-anchor" href="#naming" title="이 섹션 링크">&para;</a></h2>
+<p>Naming convention은 “같은 종류의 대상에는 같은 방식으로 이름을 붙이자”는 약속입니다. 이름만 보고 용도와 변경 목적을 파악하고 검색하기 쉽게 만듭니다. <strong>모든 회사가 따르는 단 하나의 규칙은 없습니다.</strong> 실제 팀에서는 해당 저장소의 README·CONTRIBUTING과 기존 규칙을 먼저 확인합니다. 아래는 실무 관례와 공개 표준을 바탕으로 정한 <strong>이번 스터디의 규칙</strong>입니다.</p>
+<h3>8-1. 이름 모양부터 구분하기</h3>
+<table><thead><tr><th>표기법</th><th>예시</th><th>구분 방법</th></tr></thead><tbody>
+<tr><td>kebab-case</td><td><code>backend-study</code></td><td>소문자 단어를 하이픈(-)으로 연결</td></tr>
+<tr><td>snake_case</td><td><code>user_service</code></td><td>소문자 단어를 밑줄(_)로 연결</td></tr>
+<tr><td>PascalCase</td><td><code>UserService</code></td><td>모든 단어의 첫 글자를 대문자로</td></tr>
+<tr><td>camelCase</td><td><code>userName</code></td><td>첫 단어는 소문자, 이후 단어 첫 글자는 대문자로. 이번 Python 변수에는 사용하지 않음</td></tr>
+<tr><td>UPPER_SNAKE_CASE</td><td><code>MAX_RETRIES</code></td><td>대문자 단어를 밑줄로 연결</td></tr>
+</tbody></table>
+<h3>8-2. 저장소·파일·브랜치 이름</h3>
+<table><thead><tr><th>대상</th><th>이 스터디의 규칙</th><th>예시</th></tr></thead><tbody>
+<tr><td>개인 저장소</td><td>영문 소문자 + 하이픈, 공백 없이 목적 표현</td><td><code>backend-study</code></td></tr>
+<tr><td>기본 브랜치</td><td><code>main</code></td><td>1주차는 main에서 실습</td></tr>
+<tr><td>작업 브랜치</td><td><code>종류/짧은-작업-설명</code></td><td><code>feature/signup</code>, <code>fix/login-error</code>, <code>docs/setup-guide</code>, <code>chore/update-dependencies</code></td></tr>
+<tr><td>일반 문서 파일</td><td>영문 소문자 + 하이픈</td><td><code>setup-guide.md</code>, <code>week-01-notes.md</code></td></tr>
+<tr><td>관례적인 특수 파일</td><td>정해진 이름 유지</td><td><code>README.md</code>, <code>.gitignore</code>, <code>pyproject.toml</code></td></tr>
+<tr><td>Python 모듈 파일</td><td>영문 소문자 + 필요시 밑줄</td><td><code>user_service.py</code></td></tr>
+</tbody></table>
+<p>브랜치 생성은 2주차에 실습합니다. <code>feature/</code>는 기능 작업, <code>fix/</code>는 버그 수정입니다. 이슈 관리 도구를 쓰는 팀에서는 <code>feature/123-user-signup</code>처럼 작업 번호를 넣기도 합니다. 이번 스터디에서는 번호가 없어도 됩니다. <code>mybranch</code>, <code>test2</code>, <code>final-final</code>처럼 목적을 알 수 없는 이름은 피하세요. 참고 답안 저장소의 기존 이름은 그대로 사용하며 새 개인 저장소에 위 규칙을 적용합니다. <a href="https://docs.gitlab.com/user/project/repository/branches/#name-your-branch">GitLab의 브랜치 이름 안내</a></p>
+<h3>8-3. 커밋 메시지: Conventional Commits</h3>
+<p>커밋에는 <code>type: 설명</code> 형식을 사용합니다. 콜론 다음에는 공백 하나를 넣습니다. 범위를 밝히고 싶으면 <code>type(scope): 설명</code>으로 씁니다. 예를 들어 <code>fix(auth): reject expired tokens</code>의 auth는 인증 영역입니다. scope는 선택 사항입니다. <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits 공식 명세</a></p>
+<table><thead><tr><th>type</th><th>언제 쓰나</th><th>스터디 예시</th></tr></thead><tbody>
+<tr><td>feat</td><td>새 기능</td><td><code>feat: add signup endpoint</code></td></tr>
+<tr><td>fix</td><td>잘못된 동작 수정</td><td><code>fix: reject duplicate email</code></td></tr>
+<tr><td>docs</td><td>문서 변경</td><td><code>docs: add study goals</code></td></tr>
+<tr><td>refactor</td><td>기능·동작을 유지하며 코드 구조 개선</td><td><code>refactor: extract user lookup</code></td></tr>
+<tr><td>test</td><td>테스트 추가·수정</td><td><code>test: cover invalid password</code></td></tr>
+<tr><td>style</td><td>동작에 영향 없는 코드 서식 변경</td><td><code>style: format user router</code></td></tr>
+<tr><td>chore</td><td>기타 유지보수·개발 설정 정리</td><td><code>chore: ignore local files</code></td></tr>
+<tr><td>build / ci</td><td>빌드·의존성 / 자동 검사 설정</td><td><code>build: update fastapi dependency</code>, <code>ci: run pytest on push</code></td></tr>
+</tbody></table>
+<p>명세는 feat와 fix의 의미를 정하고 다른 type도 허용합니다. 나머지 분류는 팀이 합의하는 관례입니다. 이번 스터디는 의존성 변경을 build, 기타 개발 설정을 chore로 구분합니다. 기존 실무 팀에서 다르게 정했다면 그 규칙을 따릅니다.</p>
+<ul><li>type은 소문자로 통일합니다. 설명은 한국어도 가능합니다: <code>docs: 학습 목표 추가</code>.</li><li>영어 설명은 <code>add</code>, <code>fix</code>, <code>remove</code>처럼 행동으로 시작하고 한 줄로 구체적으로 적습니다.</li><li><code>update</code>, <code>수정함</code>만 적기보다 무엇을 바꿨는지 씁니다. 이유가 길면 제목 다음 빈 줄을 두고 본문에 적습니다.</li><li>README 오타 수정은 docs, 서버 오류 수정은 fix입니다. 새 기능 없이 코드만 정리했다면 feat가 아니라 refactor입니다.</li><li>서로 다른 목적이 섞였다면 커밋을 나눕니다. 접두사를 붙이는 것만으로 좋은 커밋이 되지는 않습니다.</li></ul>
+<p>참고로 호환성을 깨는 변경은 <code>feat(api)!: rename user response field</code>처럼 <code>!</code>나 <code>BREAKING CHANGE:</code> footer로 표시합니다. 기존 사용 코드가 바뀌어야 하는 변경이라는 뜻이며 1주차에서는 직접 사용할 필요가 없습니다.</p>
+<h3>8-4. 앞으로 쓸 Python 이름 규칙 미리 보기</h3>
+<p>Python에서는 <a href="https://peps.python.org/pep-0008/#naming-conventions">PEP 8</a>에 맞춰 함수·변수는 <code>get_user</code>, <code>user_email</code>처럼 snake_case, 클래스는 <code>UserService</code>처럼 PascalCase, 상수는 <code>MAX_RETRIES</code>처럼 대문자와 밑줄을 사용합니다. 저장소 이름의 하이픈을 Python 변수나 모듈 이름에 그대로 쓰지 마세요. 코드는 이후 주차에서 작성합니다.</p>
+<h2 id="practice">9. 작은 커밋 만들기 · 선택 실습<a class="heading-anchor" href="#practice" title="이 섹션 링크">&para;</a></h2>
+<p>좋은 커밋의 크기는 줄 수보다 목적에 달려 있습니다. “README 오타 수정”과 “서버 동작 변경”이 섞이면 검토와 문제 추적이 어려워집니다. <code>docs:</code>나 <code>chore:</code>는 메시지 관례이며 Git이 강제하는 문법이 아닙니다. 한국어 메시지도 괜찮습니다.</p>
+<table><thead><tr><th>모호한 메시지</th><th>목적이 보이는 메시지</th></tr></thead><tbody><tr><td>update</td><td>docs: add weekly study schedule</td></tr><tr><td>fix</td><td>docs: correct setup command typo</td></tr><tr><td>작업 완료</td><td>docs: explain project learning goals</td></tr></tbody></table>
+<h3>선택: 한 파일의 변경도 나누기</h3>
+<p>README의 제목과 맨 아래 학습 계획을 서로 떨어진 위치에서 수정하고 저장합니다. 아래 명령으로 변경 덩어리(hunk)를 하나씩 선택합니다.</p>
+<pre><code class="language-bash">git add -p README.md
+git diff --staged
+git diff
+</code></pre>
+<p><code>y</code>는 이 덩어리 선택, <code>n</code>은 건너뛰기, <code>s</code>는 나눌 수 있을 때 분할, <code>q</code>는 종료입니다. 한 덩어리로 나오고 분할할 수 없다면 억지로 진행하지 말고 <code>git restore --staged README.md</code>로 선택을 풀어 보세요. 처음에는 파일별로 목적을 나누는 것만 익혀도 됩니다. 선택한 내용을 검토한 뒤 적절한 메시지로 커밋하고 남은 수정도 마무리합니다.</p>
+<h2 id="troubleshooting">10. 막혔을 때: 오류 문구부터 읽기<a class="heading-anchor" href="#troubleshooting" title="이 섹션 링크">&para;</a></h2>
+<table><thead><tr><th>보이는 문구/상황</th><th>원인 후보</th><th>확인과 다음 행동</th></tr></thead><tbody><tr><td>git: command not found</td><td>Git 미설치 또는 경로 미반영</td><td>설치를 확인하고 터미널을 다시 열어 git --version 실행</td></tr><tr><td>not a git repository</td><td>다른 폴더에서 실행</td><td>pwd와 ls로 확인하고 연습 저장소로 cd. 아무 곳에서 init하지 않기</td></tr><tr><td>Author identity unknown</td><td>작성자 설정 없음</td><td>2절의 user.name과 user.email 설정 후 commit 재시도</td></tr><tr><td>nothing to commit</td><td>후보 변경 없음</td><td>파일 저장 여부, status, diff 확인. untracked라면 add 필요</td></tr><tr><td>pathspec … did not match</td><td>파일명·위치 오류</td><td>ls로 대소문자와 확장자 확인</td></tr><tr><td>remote origin already exists</td><td>이미 주소 등록됨</td><td>git remote -v 확인. 잘못된 주소면 git remote set-url origin 올바른URL</td></tr><tr><td>src refspec main does not match any</td><td>커밋이 없거나 브랜치 이름 다름</td><td>git log와 git branch --show-current 확인. 첫 커밋을 만들고 실제 브랜치 확인</td></tr><tr><td>Authentication failed / Repository not found</td><td>인증·권한·URL 문제</td><td>remote 주소와 로그인 계정, 저장소 접근 권한 확인</td></tr><tr><td>rejected / non-fast-forward</td><td>원격에 로컬에 없는 이력이 있음</td><td>강제 push하지 않기. GitHub에서 자동 README를 만들었는지 확인하고 강사와 이력 비교. 병합은 2주차에서 학습</td></tr><tr><td>diff에 아무것도 안 나옴</td><td>이미 staged이거나 새 파일, 또는 변경 없음</td><td>status와 diff --staged를 함께 확인</td></tr></tbody></table>
+<h2 id="quiz">11. 설명할 수 있으면 이해한 것: 질문과 해설<a class="heading-anchor" href="#quiz" title="이 섹션 링크">&para;</a></h2>
+<details><summary>1. Git과 GitHub는 어떻게 다른가요?</summary><p>Git은 로컬에서 버전 관리를 하는 도구, GitHub는 저장소를 호스팅하고 협업 기능을 제공하는 서비스입니다. 로컬 커밋은 인터넷 없이 가능하며 공유에는 push가 필요합니다.</p></details>
+<details><summary>2. 왜 바로 commit하지 않고 add를 하나요?</summary><p>여러 수정 중 이번 기록에 넣을 내용을 고르기 위해서입니다. 예를 들어 완성한 설명과 아직 작성 중인 계획을 따로 기록할 수 있습니다.</p></details>
+<details><summary>3. README를 A로 바꾸고 add, B로 바꾸고 commit하면?</summary><p>일반적인 commit -m은 add 시점의 A를 기록합니다. 작업 파일에는 B가 남고, A와 B 차이는 아직 스테이징되지 않은 수정으로 보입니다.</p></details>
+<details><summary>4. commit 후 스테이징 영역은 비어 있나요?</summary><p>아니요. 스냅샷 후보는 남지만 최신 커밋과 같아서 커밋할 변경이 없는 상태입니다.</p></details>
+<details><summary>5. diff가 비었는데 status에 새 파일이 보이는 이유는?</summary><p>추적되지 않은 새 파일 내용은 일반 diff의 비교 대상이 아닙니다. 파일을 읽어 확인하고 add한 뒤 diff --staged로 확인할 수 있습니다.</p></details>
+<details><summary>6. .gitignore에 썼는데 GitHub에서 파일이 보이는 이유는?</summary><p>이미 커밋·추적된 파일에는 ignore가 소급 적용되지 않습니다. 추적 제외를 커밋하고 push해도 과거 이력은 남습니다.</p></details>
+<details><summary>7. restore --staged와 restore의 차이는?</summary><p>전자는 스테이징을 변경하며 작업 파일을 유지합니다. 후자는 기본적으로 작업 파일을 스테이징 내용으로 되돌려 미선택 수정을 버립니다.</p></details>
+<details><summary>8. working tree clean이면 push도 끝났나요?</summary><p>아니요. 작업 파일·스테이징·최신 커밋 간 미기록 변경이 없다는 뜻입니다. 원격 공유 여부는 별도로 확인해야 합니다.</p></details>
+<details><summary>9. origin은 GitHub가 정한 특별한 서버인가요?</summary><p>아니요. 원격 주소에 붙인 관례적인 별명입니다. 다른 이름도 가능하고 주소는 remote -v로 확인합니다.</p></details>
+<details><summary>10. 저장과 커밋은 어떻게 다른가요?</summary><p>저장은 작업 파일을 바꾸고, 커밋은 선택된 상태를 메시지와 함께 이력에 남긴다고 구분합니다. add 이후 추가 편집 실험으로 차이를 직접 보여 줍니다.</p></details>
+<p>복습 완료 기준: 3번을 상태 표 없이 설명하고, 5번과 8번에서 어떤 명령으로 확인할지 말할 수 있어야 합니다.</p>
+<h2 id="references">12. 공식 참고 자료와 다음 주 연결<a class="heading-anchor" href="#references" title="이 섹션 링크">&para;</a></h2>
+<p>명령의 정확한 동작이 궁금할 때는 다음 자료를 참고하세요. 수업에서 전부 읽을 필요는 없습니다.</p>
+<ul><li><a href="https://git-scm.com/docs/gittutorial">Git 공식 튜토리얼</a></li><li><a href="https://git-scm.com/docs/git-add">git add — 후보 내용을 갱신하는 규칙</a></li><li><a href="https://git-scm.com/docs/git-diff">git diff — 비교 기준</a></li><li><a href="https://git-scm.com/docs/git-status">git status — 상태 표시</a></li><li><a href="https://git-scm.com/docs/git-restore">git restore — 복원 대상</a></li><li><a href="https://git-scm.com/docs/gitignore">gitignore — 제외 패턴</a></li><li><a href="https://docs.github.com/en/get-started/git-basics/set-up-git">GitHub — Git 설정과 인증</a></li></ul>
+<p>이번 주에는 혼자 변경을 기록하고 공유했습니다. <a href="week-02.html">2주차</a>에서는 개인 레포 안에서 기능 브랜치를 만들고 자신의 main으로 Pull Request를 열어 변경을 합칩니다.</p></article>
+      <nav class="pager" aria-label="이전 및 다음 문서"><a class="pager-link previous" href="index.html"><span>이전</span><strong>Overview · 14주 전체 로드맵</strong></a><a class="pager-link next" href="week-02.html"><span>다음</span><strong>Week 02 · Git & GitHub II</strong></a></nav>
+      <footer class="document-footer">
+        <span>2026 Fall Backend Study</span>
+        <a href="index.html">전체 커리큘럼으로</a>
+      </footer>
+    </div>
+  </main>
+  <script>
+(() => {
+  const root = document.documentElement;
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem("backend-study-theme");
+  } catch {
+    // Some browsers restrict storage for files opened directly from disk.
+  }
+  const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = savedTheme || (preferredDark ? "dark" : "light");
+
+  document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem("backend-study-theme", next);
+    } catch {
+      // The current page still changes theme even when storage is unavailable.
+    }
+  });
+
+  const sidebar = document.querySelector(".sidebar");
+  const menuToggle = document.querySelector(".menu-toggle");
+  menuToggle?.addEventListener("click", () => {
+    const isOpen = sidebar?.classList.toggle("open") ?? false;
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (window.innerWidth > 900 || !sidebar?.classList.contains("open")) return;
+    if (sidebar.contains(event.target) || menuToggle?.contains(event.target)) return;
+    sidebar.classList.remove("open");
+    menuToggle?.setAttribute("aria-expanded", "false");
+  });
+
+  document.querySelectorAll("pre").forEach((block) => {
+    const button = document.createElement("button");
+    button.className = "copy-code";
+    button.type = "button";
+    button.textContent = "COPY";
+    button.setAttribute("aria-label", "코드 복사");
+    button.addEventListener("click", async () => {
+      const code = block.querySelector("code")?.textContent ?? "";
+      let copied = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+          copied = true;
+        }
+      } catch {
+        copied = false;
+      }
+      if (!copied) {
+        const textarea = document.createElement("textarea");
+        textarea.value = code;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.append(textarea);
+        textarea.select();
+        copied = document.execCommand("copy");
+        textarea.remove();
+      }
+      button.textContent = copied ? "COPIED" : "SELECT & COPY";
+      window.setTimeout(() => (button.textContent = "COPY"), 1200);
+    });
+    block.append(button);
+  });
+
+  const progressBar = document.querySelector(".reading-progress span");
+  const updateProgress = () => {
+    const distance = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = distance > 0 ? (window.scrollY / distance) * 100 : 0;
+    if (progressBar) progressBar.style.width = `${Math.min(100, progress)}%`;
+  };
+  document.addEventListener("scroll", updateProgress, { passive: true });
+  updateProgress();
+
+  const diagrams = document.querySelectorAll(".mermaid");
+  if (diagrams.length) {
+    import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs")
+      .then(({ default: mermaid }) => {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: root.dataset.theme === "dark" ? "dark" : "neutral",
+          securityLevel: "strict",
+          fontFamily: "system-ui, sans-serif",
+        });
+        return mermaid.run({ nodes: diagrams });
+      })
+      .catch(() => {
+        diagrams.forEach((diagram) => diagram.classList.add("mermaid-unavailable"));
+      });
+  }
+})();
+
+  </script>
+</body>
+</html>
