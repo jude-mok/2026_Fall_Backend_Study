@@ -4,8 +4,9 @@ import psycopg
 import pytest
 from fastapi.testclient import TestClient
 
-from app import database, main
+from app import database
 from app.main import app
+from app.repository import users as user_repository
 
 client = TestClient(app)
 
@@ -15,7 +16,7 @@ def db_connection(monkeypatch):
     connection = MagicMock()
     manager = MagicMock()
     manager.__enter__.return_value = connection
-    monkeypatch.setattr(main, "get_connection", lambda: manager)
+    monkeypatch.setattr(user_repository, "get_connection", lambda: manager)
     return connection
 
 

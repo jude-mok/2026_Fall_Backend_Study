@@ -621,12 +621,12 @@ h2[id], h3[id] { scroll-margin-top: 5rem; }
 <a href="week-06.html"><span>Week 06</span><strong>Local DB &amp; API 조회</strong></a>
 <a href="week-07.html" aria-current="page" class="active"><span>Week 07</span><strong>User CRUD &amp; Validation</strong></a>
 <a href="week-08.html"><span>Week 08</span><strong>Backend Layers</strong></a>
-<a href="week-09.html"><span>Week 09</span><strong>Database II</strong></a>
-<a href="week-10.html"><span>Week 10</span><strong>Docker & DB</strong></a>
-<a href="week-11.html"><span>Week 11</span><strong>SQLAlchemy ORM</strong></a>
-<a href="week-12.html"><span>Week 12</span><strong>Authentication I</strong></a>
-<a href="week-13.html"><span>Week 13</span><strong>Authentication II</strong></a>
-<a href="week-14.html"><span>Week 14</span><strong>Final Integration</strong></a></nav>
+<a aria-disabled="true"><span>Week 09</span><strong>Database II · 준비 중</strong></a>
+<a aria-disabled="true"><span>Week 10</span><strong>Docker & DB · 준비 중</strong></a>
+<a aria-disabled="true"><span>Week 11</span><strong>SQLAlchemy ORM · 준비 중</strong></a>
+<a aria-disabled="true"><span>Week 12</span><strong>Authentication I · 준비 중</strong></a>
+<a aria-disabled="true"><span>Week 13</span><strong>Authentication II · 준비 중</strong></a>
+<a aria-disabled="true"><span>Week 14</span><strong>Final Integration · 준비 중</strong></a></nav>
     <div class="sidebar-footer">
       <span>2026 FALL</span>
       <button class="theme-toggle" type="button" aria-label="색상 테마 전환">LIGHT / DARK</button>
@@ -714,7 +714,9 @@ PGPASSWORD=&quot;YOUR_STUDENT_ROLE_PASSWORD&quot;</code></pre>
 <p>shared pooler에서 custom DB role의 user는 <code>study01.PROJECT_REF</code> 형식입니다. 학생에게 보이는 postgres용 문자열을 그대로 쓰지 않습니다. 비밀번호는 자기 study01 계정의 비밀번호이며 Supabase 로그인 비밀번호나 API key가 아닙니다. 별도 PG 변수에 넣으므로 비밀번호를 URL 인코딩하지 않습니다. 공백·# 등이 포함되면 따옴표로 감쌉니다.</p>
 <p>.gitignore에는 <code>.env</code>, <code>.env.*</code>와 예외 <code>!.env.example</code>이 있어야 합니다. 다음 명령이 .env.local을 출력하면 Git ignore가 적용된 것입니다. 비밀번호를 화면 공유하거나 Git에 올리지 않습니다.</p>
 <pre><code class="language-shell">git check-ignore .env.local</code></pre>
-<h3>3-3. 연결 함수: 6주차 코드 그대로 사용</h3>
+<h3>3-3. 로컬 연결 코드를 공용 DB 연결 코드로 전환</h3>
+<p>6주차 문서의 연결 함수는 connect_db이고, .env.local은 database.py 옆에 있습니다. 이번 주 완성 코드는 app/database.py의 get_connection을 사용하고, 프로젝트 루트의 .env.local을 읽습니다. 함수 이름과 설정 파일 위치를 함께 맞춥니다.</p>
+<ol><li>app 폴더가 없으면 만들고 빈 app/__init__.py를 추가합니다. main.py가 프로젝트 루트에 있으면 기존 내용을 보존하여 app/main.py로 옮깁니다.</li><li>아래 코드를 app/database.py에 작성합니다. 기존 로컬 연결 설정은 별도로 보관합니다. 프로젝트 루트의 .env.local에는 이번 공용 DB 연결값을 넣습니다.</li><li>app/main.py의 기존 연결 import를 from app.database import get_connection으로 바꿉니다. connect_db() 호출도 get_connection()으로 바꿉니다.</li><li>6주차 seed.py는 이번 공용 DB에 실행하지 않습니다. 공용 연습 데이터는 팀장이 준비합니다.</li><li>프로젝트 루트에서 다음 절의 check_db.py를 실행합니다. 이미 아래 구조로 준비된 코드를 사용한다면 중복해서 옮기지 않습니다.</li></ol>
 <details><summary>app/database.py 전체 코드 확인</summary><pre><code class="language-python">import os
 from pathlib import Path
 
